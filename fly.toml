@@ -1,10 +1,10 @@
-# fly.toml app configuration file generated for authservice-d8oemw on 2026-04-24T23:36:13Z
+# fly.toml app configuration file generated for authservice-rm on 2026-04-24T23:56:21Z
 #
 # See https://fly.io/docs/reference/configuration/ for information about how to use this file.
 #
 
-app = 'authservice-d8oemw'
-primary_region = 'cdg'
+app = 'authservice-rm'
+primary_region = 'ams'
 
 [build]
 
