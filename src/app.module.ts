@@ -27,9 +27,14 @@ import { HealthController } from './health.controller';
       isGlobal: true,
       imports: [ConfigModule],
       useFactory: async (config: ConfigService) => {
-        const url = config.get<string>('REDIS_URL', 'redis://localhost:6379');
+        const url =
+          process.env.REDIS_URL ??
+          config.get<string>('REDIS_URL', 'redis://localhost:6379');
         return {
-          store: await redisStore({ url }),
+          store: await redisStore({
+            url,
+            socket: { family: 4 },
+          }),
           ttl: 60,
         };
       },
