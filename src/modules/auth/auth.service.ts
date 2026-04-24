@@ -1,5 +1,5 @@
 import { BadRequestException, ConflictException, Injectable, NotFoundException, UnauthorizedException } from "@nestjs/common";
-import { AppLogger } from "src/shared/logger";
+import { AppLogger } from "../../shared/logger";
 import { UsersService } from "../users/users.service";
 import { LoginDto, RegisterDto } from "./dtos";
 import { AuthResponse, AuthTokens } from "./interfaces";
@@ -9,9 +9,9 @@ import * as crypto from 'crypto';
 import { OtpService } from "../otp/otp.service";
 import { PasswordService } from "../password/password.service"
 import { CreateUserCommand } from "../users/commands/create-user.command";
-import { normalizePhoneNumber } from "src/shared/utils/phone-number.util";
+import { normalizePhoneNumber } from "../../shared/utils/phone-number.util";
 import { LoginUserCommand } from "./commands/login.command";
-import { parseLoginIdentifier } from "src/shared/utils/login-identifier.util";
+import { parseLoginIdentifier } from "../../shared/utils/login-identifier.util";
 import { IdentifierType } from "./enums/identifier-type.enum";
 import { ForgotPasswordUserCommand } from "./commands/forgot-password.command";
 import { SendOtpCommand } from "./commands/send-otp.command";

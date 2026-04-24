@@ -1,6 +1,6 @@
 import { BadRequestException, Injectable, NotFoundException } from "@nestjs/common";
 import { RedisService } from "../redis/redis.service";
-import { AppLogger } from "src/shared/logger";
+import { AppLogger } from "../../shared/logger";
 import { IdentifierType } from "../auth/enums/identifier-type.enum";
 
 

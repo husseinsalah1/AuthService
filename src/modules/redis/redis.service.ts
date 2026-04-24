@@ -6,7 +6,7 @@ import {
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { createClient, RedisClientType } from 'redis';
-import { AppLogger } from 'src/shared/logger';
+import { AppLogger } from '../../shared/logger';
 
 @Injectable()
 export class RedisService implements OnModuleInit, OnModuleDestroy {

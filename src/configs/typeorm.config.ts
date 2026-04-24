@@ -1,7 +1,7 @@
 import { Logger } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModuleAsyncOptions } from '@nestjs/typeorm';
-import { AppLogger } from 'src/shared/logger';
+import { AppLogger } from '../shared/logger';
 import { DataSource } from 'typeorm';
 
 

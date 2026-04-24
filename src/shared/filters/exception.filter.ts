@@ -6,7 +6,7 @@ import {
     ExceptionFilter,
 } from '@nestjs/common';
 import { Request, Response } from 'express';
-import { AppLogger } from 'src/shared/logger';
+import { AppLogger } from '../logger';
 import { ApiErrorResponse } from '../errors/types/api-error-response.interface';
 import { ExceptionMapper } from '../errors/mappers/exception.mapper';
 

@@ -7,7 +7,7 @@ import { JwtRefreshStrategy } from './strategies/jwt-refresh.strategy';
 import { UsersModule } from '../users/users.module';
 import { TokensModule } from '../tokens/tokens.module';
 import { OtpModule } from '../otp/otp.module';
-import { PasswordModule } from 'src/modules/password/password.module';
+import { PasswordModule } from '../password/password.module';
 
 @Module({
     imports: [

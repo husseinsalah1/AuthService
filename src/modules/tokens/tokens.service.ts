@@ -3,7 +3,7 @@ import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import type { StringValue } from 'ms';
 import { User } from '../users/entities/user.entity';
-import { JwtPayload } from 'src/shared/interfaces';
+import { JwtPayload } from '../../shared/interfaces';
 import { AuthTokens } from '../auth/interfaces';
 
 @Injectable()

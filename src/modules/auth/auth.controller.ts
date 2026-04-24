@@ -1,10 +1,10 @@
 import { Controller, Post, Body, UseGuards, Req, Get, Res } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { AuthService } from './auth.service';
-import { CurrentUser, Public } from 'src/shared/decorators';
+import { CurrentUser, Public } from '../../shared/decorators';
 import { ForgotPasswordDto, LoginDto, RegisterDto, ResetPasswordDto } from './dtos';
-import { RequestWithUser } from 'src/shared/interfaces';
-import { JwtAuthGuard } from 'src/shared/guards/jwt-auth.guard';
+import { RequestWithUser } from '../../shared/interfaces';
+import { JwtAuthGuard } from '../../shared/guards/jwt-auth.guard';
 import { User } from '../users/entities/user.entity';
 import { IsString, Length } from 'class-validator';
 import { SendOtpDto } from './dtos/send-otp.dto';

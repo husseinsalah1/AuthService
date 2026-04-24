@@ -1,6 +1,6 @@
 import { ConflictException, Injectable, NotFoundException } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
-import { AppLogger } from "src/shared/logger";
+import { AppLogger } from "../../shared/logger";
 import { User } from "./entities/user.entity";
 import { FindOptionsWhere, Repository } from "typeorm";
 import { CreateUserDto, UpdateUserDto } from "./dtos";

@@ -7,7 +7,7 @@ import {
 } from '@nestjs/common';
 import { Observable, tap } from 'rxjs';
 import { Request, Response } from 'express';
-import { AppLogger } from 'src/shared/logger';
+import { AppLogger } from '../logger';
 
 
 
