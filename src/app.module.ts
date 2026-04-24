@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { typeORMConfig } from './configs/typeorm.config';
-import { ConfigModule } from '@nestjs/config';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 import databaseConfig from './configs/database.config';
 import jwtConfig from './configs/jwt.config';
 import { AuthModule } from './modules/auth/auth.module';
@@ -11,10 +11,11 @@ import { JwtAuthGuard } from './shared/guards/jwt-auth.guard';
 import { LoggingInterceptor } from './shared/interceptors/logger.interceptors';
 import { TransformInterceptor } from './shared/interceptors/transform.interceptor';
 import { AllExceptionsFilter } from './shared/filters/exception.filter';
-import { CacheModule } from '@nestjs/cache-manager'
-import * as redisStore from 'cache-manager-redis-store';
+import { CacheModule } from '@nestjs/cache-manager';
+import { redisStore } from 'cache-manager-redis-store';
 import { RedisModule } from './modules/redis/redis.module';
 import { OtpModule } from './modules/otp/otp.module';
+import { HealthController } from './health.controller';
 
 @Module({
   imports: [
@@ -22,12 +23,17 @@ import { OtpModule } from './modules/otp/otp.module';
       isGlobal: true,
       load: [databaseConfig, jwtConfig]
     }),
-    CacheModule.register({
+    CacheModule.registerAsync({
       isGlobal: true,
-      store: redisStore,
-      host: 'localhost',
-      port: 6379,
-      ttl: 60,
+      imports: [ConfigModule],
+      useFactory: async (config: ConfigService) => {
+        const url = config.get<string>('REDIS_URL', 'redis://localhost:6379');
+        return {
+          store: await redisStore({ url }),
+          ttl: 60,
+        };
+      },
+      inject: [ConfigService],
     }),
     TypeOrmModule.forRootAsync(typeORMConfig),
     AuthModule,
@@ -35,7 +41,7 @@ import { OtpModule } from './modules/otp/otp.module';
     RedisModule,
     OtpModule,
   ],
-  controllers: [],
+  controllers: [HealthController],
   providers: [
     {
       provide: APP_GUARD,

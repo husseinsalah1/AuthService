@@ -1,37 +1,74 @@
+# Local full stack: PostgreSQL + Redis + auth API.
+# Copy .env.example to .env and set secrets before `docker compose up`.
+
 services:
-  auth-service:
+  app:
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: auth-service
-    restart: always
+      target: production
+    container_name: auth_service
+    ports:
+      - '${AUTH_PORT:-3000}:3000'
     env_file:
       - .env
-    ports:
-      - "3000:3000"
+    environment:
+      NODE_ENV: development
+      PORT: 3000
+      DB_HOST: postgres
+      DB_PORT: 5432
+      REDIS_URL: redis://redis:6379
     depends_on:
-      - postgres
-      - redis
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - auth_network
 
   postgres:
     image: postgres:16-alpine
-    container_name: auth-postgres
-    restart: always
-    environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: auth_db
+    container_name: auth_postgres
     ports:
-      - "5432:5432"
+      - '${POSTGRES_PUBLISH_PORT:-5432}:5432'
+    env_file:
+      - .env
+    environment:
+      POSTGRES_USER: ${DB_USERNAME}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_NAME}
     volumes:
-      - auth_postgres_data:/var/lib/postgresql/data
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U "$$POSTGRES_USER" -d "$$POSTGRES_DB"']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+    networks:
+      - auth_network
 
   redis:
     image: redis:7-alpine
-    container_name: auth-redis
-    restart: always
+    container_name: auth_redis
     ports:
-      - "6379:6379"
+      - '${REDIS_PUBLISH_PORT:-6379}:6379'
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ['CMD', 'redis-cli', 'ping']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+    networks:
+      - auth_network
 
 volumes:
-  auth_postgres_data:
+  postgres_data:
+  redis_data:
+
+networks:
+  auth_network:
+    driver: bridge
