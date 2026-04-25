@@ -1,38 +1,24 @@
-# Stage 1: Build the Application
-# We use node:18 as the base for building and installing dependencies.
-FROM node:18 AS build
+# Build NestJS; final image matches docker-compose `target: production` and fly.toml `build-target`.
+FROM node:20-bookworm-slim AS builder
+WORKDIR /app
 
-# Set the working directory inside the container
-WORKDIR /usr/src/app
-
-# Copy package.json and package-lock.json first to leverage Docker caching.
-# If these files don't change, subsequent builds can skip 'npm install'.
 COPY package*.json ./
+RUN npm ci
 
-# Install dependencies
-RUN npm install
-
-# Copy the rest of the application source code
 COPY . .
+RUN npm run build
 
-# Stage 2: Create the Final Production Image
-# We use node:18 as the runtime image with all the necessary tools.
-FROM node:18
+FROM node:20-bookworm-slim AS production
+WORKDIR /app
 
-# Set the working directory
-WORKDIR /usr/src/app
-
-# Copy the node_modules and built application files from the 'build' stage
-COPY --from=build /usr/src/app/node_modules ./node_modules
-COPY --from=build /usr/src/app/package*.json ./
-COPY --from=build /usr/src/app .
-
-# Expose the port your app runs on
+ENV NODE_ENV=development
 ENV PORT=8080
-EXPOSE $PORT
 
-# Run the application using the non-root user (recommended for security)
+COPY package*.json ./
+RUN npm ci --omit=dev && npm cache clean --force
+
+COPY --from=builder /app/dist ./dist
+
 USER node
-
-# Define the command to start your application
-CMD [ "node", "index.js" ]
+EXPOSE 8080
+CMD ["node", "dist/main.js"]
