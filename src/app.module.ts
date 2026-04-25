@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { typeORMConfig } from './configs/typeorm.config';
-import { ConfigModule, ConfigService } from '@nestjs/config';
+import { ConfigModule } from '@nestjs/config';
 import databaseConfig from './configs/database.config';
 import jwtConfig from './configs/jwt.config';
 import { AuthModule } from './modules/auth/auth.module';
@@ -16,6 +16,7 @@ import { redisStore } from 'cache-manager-redis-store';
 import { RedisModule } from './modules/redis/redis.module';
 import { OtpModule } from './modules/otp/otp.module';
 import { HealthController } from './health.controller';
+import { resolveRedisUrl } from './configs/resolve-redis-url';
 
 @Module({
   imports: [
@@ -25,11 +26,8 @@ import { HealthController } from './health.controller';
     }),
     CacheModule.registerAsync({
       isGlobal: true,
-      imports: [ConfigModule],
-      useFactory: async (config: ConfigService) => {
-        const url =
-          process.env.REDIS_URL ??
-          config.get<string>('REDIS_URL', 'redis://localhost:6379');
+      useFactory: async () => {
+        const url = resolveRedisUrl();
         return {
           store: await redisStore({
             url,
@@ -38,7 +36,6 @@ import { HealthController } from './health.controller';
           ttl: 60,
         };
       },
-      inject: [ConfigService],
     }),
     TypeOrmModule.forRootAsync(typeORMConfig),
     AuthModule,
