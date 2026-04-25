@@ -1,0 +1,24 @@
+# Fly.io — from this directory run: `fly deploy`
+# Set `app` to your real Fly app name (`fly apps list`).
+
+app = "auth"
+primary_region = "iad"
+
+[build]
+  dockerfile = "Dockerfile"
+  build-target = "production"
+
+[env]
+  NODE_ENV = "production"
+
+[http_service]
+  internal_port = 8080
+  force_https = true
+  auto_stop_machines = "stop"
+  auto_start_machines = true
+  min_machines_running = 0
+
+[[vm]]
+  memory = "512mb"
+  cpu_kind = "shared"
+  cpus = 1
