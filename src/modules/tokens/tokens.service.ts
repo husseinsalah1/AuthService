@@ -5,6 +5,7 @@ import type { StringValue } from 'ms';
 import { User } from '../users/entities/user.entity';
 import { JwtPayload } from '../../shared/interfaces';
 import { AuthTokens } from '../auth/interfaces';
+import { UserResponse } from '../users/types/user-response.type';
 
 @Injectable()
 export class TokensService {
@@ -17,7 +18,9 @@ export class TokensService {
         const payload: JwtPayload = {
             sub: user.id,
             email: user.email,
-            role: user.role,
+            phoneNumber: user.phoneNumber,
+            countryCode: user.countryCode,
+            role: user?.role?.key || "",
         };
 
         const accessExpiresIn = this.configService.get<string>('jwt.accessExpiresIn') as StringValue;

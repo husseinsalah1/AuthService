@@ -3,7 +3,7 @@ import { AppLogger } from "../../shared/logger";
 import { UsersService } from "../users/users.service";
 import { LoginDto, RegisterDto } from "./dtos";
 import { AuthResponse, AuthTokens } from "./interfaces";
-import { UserRole, UserStatus } from "../users/enums";
+import { UserStatus } from "../users/enums";
 import { TokensService } from "../tokens/tokens.service";
 import * as crypto from 'crypto';
 import { OtpService } from "../otp/otp.service";
@@ -17,6 +17,9 @@ import { ForgotPasswordUserCommand } from "./commands/forgot-password.command";
 import { SendOtpCommand } from "./commands/send-otp.command";
 import { VerifyOtpCommand } from "./commands/verify-otp";
 import { ResetPasswordCommand } from "./commands/reset-password.command";
+import { RolesService } from "../roles/roles.service";
+import { User } from "../users/entities/user.entity";
+import { UserMapper } from "../users/mappers/user.mapper";
 
 @Injectable()
 export class AuthService {
@@ -25,31 +28,29 @@ export class AuthService {
         private readonly usersService: UsersService,
         private readonly tokensService: TokensService,
         private readonly otpService: OtpService,
-        private readonly passwordService: PasswordService
+        private readonly passwordService: PasswordService,
     ) { }
 
     // ====== Register ======
     async register(command: CreateUserCommand) {
         const { phoneNumber, countryCode } = command
         const normalizedPhone = normalizePhoneNumber(phoneNumber, countryCode)
+        // Get Role with user as a default 
 
         command.status = UserStatus.PENDING_VERIFICATION
-        command.role = UserRole.USER
         command.phoneNumber = normalizedPhone.phoneNumber
         command.countryCode = normalizedPhone.countryCode
 
         const user = await this.usersService.create(command);
 
-        this.logger.log(`New user registered → ${user.id}`);
+
         const tokens = await this.tokensService.generateTokens(user);
+
+        this.logger.log(`New user registered → ${user.id}`);
         return {
-            data: {
-                ...user,
-            },
-            meta: {
-                tokens
-            }
-        };
+            ...UserMapper.toResponse(user),
+            tokens
+        }
     }
 
     // ====== Login ======
@@ -77,13 +78,12 @@ export class AuthService {
 
         delete user.password
 
-        this.logger.log(`User logged in → ${user.id}`);
         const tokens = await this.tokensService.generateTokens(user);
+        this.logger.log(`User logged in → ${user.id}`);
+
         return {
-            data: {
-                ...user,
-                tokens
-            },
+            ...UserMapper.toResponse(user),
+            tokens
         }
     }
 
@@ -176,10 +176,13 @@ export class AuthService {
 
     // ─── Refresh ──────────────────────────────────────────
     async refresh(userId: string): Promise<AuthTokens> {
-        const user = await this.usersService.findById(userId);
+        const user = await this.usersService.findById(userId) as User;
         if (!user) throw new UnauthorizedException('User not found');
 
         this.logger.log(`Tokens refreshed → ${user.id}`);
-        return this.tokensService.generateTokens(user);
+
+        const tokens = await this.tokensService.generateTokens(user);
+
+        return tokens
     }
 }

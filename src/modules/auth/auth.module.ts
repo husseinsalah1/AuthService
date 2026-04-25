@@ -8,6 +8,7 @@ import { UsersModule } from '../users/users.module';
 import { TokensModule } from '../tokens/tokens.module';
 import { OtpModule } from '../otp/otp.module';
 import { PasswordModule } from '../password/password.module';
+import { RolesModule } from '../roles/roles.module';
 
 @Module({
     imports: [
@@ -15,6 +16,7 @@ import { PasswordModule } from '../password/password.module';
         TokensModule,
         OtpModule,
         PasswordModule,
+        RolesModule
     ],
     providers: [AuthService, JwtStrategy, JwtRefreshStrategy],
     controllers: [AuthController],

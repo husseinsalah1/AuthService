@@ -6,6 +6,9 @@ import { FindOptionsWhere, Repository } from "typeorm";
 import { CreateUserDto, UpdateUserDto } from "./dtos";
 import { UserStatus } from "./enums";
 import { PasswordService } from "../password/password.service";
+import { RolesService } from "../roles/roles.service";
+import { CreateUserCommand } from "./commands/create-user.command";
+import { UserMapper } from "./mappers/user.mapper";
 
 @Injectable()
 export class UsersService {
@@ -14,11 +17,13 @@ export class UsersService {
     constructor(
         @InjectRepository(User)
         private readonly userRepo: Repository<User>,
-        private readonly passwordService: PasswordService
+        private readonly passwordService: PasswordService,
+        private readonly rolesService: RolesService
+
     ) { }
 
 
-    async create(command: CreateUserDto): Promise<User> {
+    async create(command: CreateUserCommand) {
         const { email, phoneNumber } = command
         if (email) {
             const exists = await this.findByEmail(email)
@@ -31,32 +36,48 @@ export class UsersService {
         }
 
         command.password = await this.passwordService.hash(command.password)
-
+        const role = await this.rolesService.findByKey("USER")
+        command.roleId = role.id
         const user = this.userRepo.create(command)
         const saved = await this.userRepo.save(user)
 
         this.logger.log(`User Created → ${saved.id}`)
-        return saved
+        return {
+            ...saved,
+            role
+        }
     }
 
-    async findByEmail(email: string): Promise<User | null> {
-        return this.userRepo.findOne({ where: { email } });
+    async findByEmail(email: string) {
+        const user = await this.userRepo.findOne({ where: { email } });
+        return user
     }
 
-    async findByPhone(phoneNumber: string): Promise<User | null> {
-        return this.userRepo.findOne({ where: { phoneNumber } });
+    async findByPhone(phoneNumber: string) {
+        const user = await this.userRepo.findOne({ where: { phoneNumber } });
+        return user
     }
 
     // ─── Read ─────────────────────────────────────────────
-    async findById(id: string): Promise<User> {
-        const user = await this.userRepo.findOne({ where: { id } });
+    async findById(id: string) {
+        const user = await this.userRepo.findOne({
+            where: { id },
+            relations: {
+                role: true,
+            }
+        });
+
         if (!user) throw new NotFoundException(`User ${id} not found`);
-        return user;
+        return UserMapper.toResponse(user)
+
     }
 
-    async findWithPasswordByIdentifier(where: FindOptionsWhere<User>): Promise<User | null> {
-        return this.userRepo.findOne({
+    async findWithPasswordByIdentifier(where: FindOptionsWhere<User>) {
+        const user = await this.userRepo.findOne({
             where,
+            relations: {
+                role: true,
+            },
             select: {
                 id: true,
                 firstName: true,
@@ -73,25 +94,22 @@ export class UsersService {
                 updatedAt: true,
             },
         });
+
+        if (!user) {
+            return null;
+        }
+
+        return user
     }
 
-    async findByIdentifier(where: FindOptionsWhere<User>): Promise<User | null> {
+    async findByIdentifier(where: FindOptionsWhere<User>) {
         return this.userRepo.findOne({
             where,
         });
     }
 
-    async findByResetToken(token: string): Promise<User | null> {
-        return this.userRepo
-            .createQueryBuilder('user')
-            .addSelect('user.passwordResetToken')
-            .addSelect('user.passwordResetExpiresAt')
-            .where('user.passwordResetToken = :token', { token })
-            .getOne();
-    }
-
     // ─── Update ───────────────────────────────────────────
-    async update(id: string, dto: UpdateUserDto): Promise<User> {
+    async update(id: string, dto: UpdateUserDto) {
         const user = await this.findById(id);
         Object.assign(user, dto);
         const updated = await this.userRepo.save(user);
@@ -100,16 +118,16 @@ export class UsersService {
     }
 
     // ─── Status helpers ───────────────────────────────────
-    async activate(id: string): Promise<User> {
+    async activate(id: string) {
         return this.update(id, { status: UserStatus.ACTIVE });
     }
 
-    async ban(id: string): Promise<User> {
+    async ban(id: string) {
         this.logger.warn(`User banned → ${id}`);
         return this.update(id, { status: UserStatus.BANNED });
     }
 
-    async deactivate(id: string): Promise<User> {
+    async deactivate(id: string) {
         return this.update(id, { status: UserStatus.INACTIVE });
     }
 

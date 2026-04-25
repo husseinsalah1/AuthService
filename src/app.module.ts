@@ -17,6 +17,8 @@ import { RedisModule } from './modules/redis/redis.module';
 import { OtpModule } from './modules/otp/otp.module';
 import { HealthController } from './health.controller';
 import { resolveRedisUrl } from './configs/resolve-redis-url';
+import { RolesModule } from './modules/roles/roles.module';
+import { PermissionsModule } from './modules/permissions/permissions.module';
 
 @Module({
   imports: [
@@ -39,6 +41,8 @@ import { resolveRedisUrl } from './configs/resolve-redis-url';
     UsersModule,
     RedisModule,
     OtpModule,
+    RolesModule,
+    PermissionsModule
   ],
   controllers: [HealthController],
   providers: [

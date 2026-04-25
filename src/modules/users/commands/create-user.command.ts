@@ -1,5 +1,5 @@
 import { CountryCode } from "node_modules/libphonenumber-js/types.cjs";
-import { UserRole, UserStatus } from "../enums";
+import { UserStatus } from "../enums";
 
 export interface CreateUserCommand {
     firstName: string,
@@ -8,6 +8,6 @@ export interface CreateUserCommand {
     password: string,
     phoneNumber: string,
     countryCode: CountryCode,
-    role?: UserRole,
+    roleId?: string,
     status?: UserStatus,
 }

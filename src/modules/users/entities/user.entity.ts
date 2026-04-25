@@ -5,63 +5,64 @@ import {
     CreateDateColumn,
     UpdateDateColumn,
     DeleteDateColumn,
-    BeforeInsert,
-    BeforeUpdate,
+    ManyToOne,
+    JoinColumn,
+    Index
 } from 'typeorm';
-import { UserRole } from '../enums/user-role.enum';
 import { UserStatus } from '../enums/user-status.enum';
+import { Role } from 'src/modules/roles/entities/role.entity';
 
 @Entity('users')
 export class User {
     @PrimaryGeneratedColumn('uuid')
     id: string;
 
-    @Column({ nullable: true })
+    @Column({ type: 'varchar', nullable: true, length: 100 })
     firstName: string;
 
-    @Column({ nullable: true })
+    @Column({ type: 'varchar', nullable: true, length: 100 })
     lastName: string;
 
-    @Column({ unique: true, nullable: true })
+    @Index()
+    @Column({ type: 'varchar', unique: true, nullable: true, length: 255 })
     email: string;
 
-    @Column({ nullable: true, select: false })
+    @Column({ type: 'varchar', nullable: true, select: false })
     password: string;
 
-    @Column({ unique: true, nullable: true })
+    @Index()
+    @Column({ type: 'varchar', unique: true, nullable: true, length: 20 })
     phoneNumber: string;
 
-    @Column({ nullable: true })
-    countryCode: string
+    @Column({ type: 'varchar', nullable: true, length: 10 })
+    countryCode: string;
 
-    @Column({ default: false })
+    @Column({ type: 'boolean', default: false })
     isPhoneVerified: boolean;
 
-    @Column({ type: 'enum', enum: UserRole, default: UserRole.USER })
-    role: UserRole;
+    @Column({ type: 'boolean', default: false })
+    isEmailVerified: boolean;
+
+    @Column({ type: 'uuid', nullable: true })
+    roleId: string;
+
+    @ManyToOne(() => Role)
+    @JoinColumn({ name: 'roleId' })
+    role: Role;
 
     @Column({ type: 'enum', enum: UserStatus, default: UserStatus.PENDING_VERIFICATION })
     status: UserStatus;
 
-    @Column({ default: false })
-    isEmailVerified: boolean;
+    @Column({ type: 'timestamptz', nullable: true })
+    lastLoginAt: Date;
 
-    @Column({ nullable: true, select: false })
-    emailVerificationToken: string;
-
-    @Column({ nullable: true, select: false })
-    passwordResetToken: string;
-
-    @Column({ nullable: true })
-    passwordResetExpiresAt: Date;
-
-    @CreateDateColumn()
+    @CreateDateColumn({ type: 'timestamptz' })
     createdAt: Date;
 
-    @UpdateDateColumn()
+    @UpdateDateColumn({ type: 'timestamptz' })
     updatedAt: Date;
 
-    @DeleteDateColumn()
+    @DeleteDateColumn({ type: 'timestamptz' })
     deletedAt: Date;
 
 }

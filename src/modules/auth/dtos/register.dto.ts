@@ -1,4 +1,4 @@
-import { IsEmail, IsString, MinLength, IsOptional, IsMobilePhone, IsNotEmpty, Matches, Length } from 'class-validator';
+import { IsEmail, IsString, MinLength, IsOptional, IsMobilePhone, IsNotEmpty, Matches, Length, IsUUID } from 'class-validator';
 import { CountryCode } from 'libphonenumber-js';
 
 export class RegisterDto {
