@@ -53,14 +53,16 @@ export function resolveRedisUrl(): string {
 
   if (onFly()) {
     const app = process.env.FLY_APP_NAME ?? '<app>';
+    const region = process.env.FLY_REGION ?? 'ams';
+    const redisName = `${app}-redis`;
     throw new Error(
       [
         'REDIS_URL is missing or points to localhost on Fly.io.',
-        `App: ${app} | Region: ${process.env.FLY_REGION ?? '(unknown)'}`,
+        `App: ${app} | Region: ${region}`,
         '',
-        'Provision Upstash Redis on Fly and attach it (sets REDIS_URL automatically):',
-        '  fly redis create',
-        `  fly redis attach <your-redis-name> --app ${app}`,
+        'Provision Upstash Redis on Fly and attach it (copy-paste, fills in your app/region):',
+        `  fly redis create --name ${redisName} --region ${region} --enable-eviction`,
+        `  fly redis attach ${redisName} --app ${app}`,
         '  fly secrets list   # confirm REDIS_URL is now present',
         '',
         'Or set an external Redis (Upstash, ElastiCache, etc.) manually:',
