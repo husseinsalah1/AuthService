@@ -28,10 +28,14 @@ import { resolveRedisUrl } from './configs/resolve-redis-url';
       isGlobal: true,
       useFactory: async () => {
         const url = resolveRedisUrl();
+        const host = (() => {
+          try { return new URL(url).hostname.toLowerCase(); } catch { return ''; }
+        })();
+        const forceIpv4 = host === 'redis' || host === 'host.docker.internal';
         return {
           store: await redisStore({
             url,
-            socket: { family: 4 },
+            socket: forceIpv4 ? { family: 4 } : undefined,
           }),
           ttl: 60,
         };

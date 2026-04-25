@@ -7,6 +7,15 @@ import { createClient, RedisClientType } from 'redis';
 import { AppLogger } from '../../shared/logger';
 import { resolveRedisUrl } from '../../configs/resolve-redis-url';
 
+function shouldForceIpv4(url: string): boolean {
+    try {
+        const h = new URL(url).hostname.toLowerCase();
+        return h === 'redis' || h === 'host.docker.internal';
+    } catch {
+        return false;
+    }
+}
+
 @Injectable()
 export class RedisService implements OnModuleInit, OnModuleDestroy {
     private readonly logger = new AppLogger(RedisService.name);
@@ -18,7 +27,9 @@ export class RedisService implements OnModuleInit, OnModuleDestroy {
         const url = resolveRedisUrl();
         this.client = createClient({
             url,
-            socket: { family: 4 },
+            // Force IPv4 only for Docker Compose (`redis` / `host.docker.internal`).
+            // Fly's Upstash Redis is IPv6-internal — let Node decide otherwise.
+            socket: shouldForceIpv4(url) ? { family: 4 } : undefined,
         }) as RedisClientType;
 
         this.client.on('error', (err) =>
