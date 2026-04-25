@@ -1,46 +1,27 @@
-# Dependencies
+# Dependency/Build Directories
 node_modules
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
+npm-debug.log
+.npm
 
-# Build output
-dist
-
-# Environment files - NEVER include these
-.env
-.env.*
-!.env.example
-
-# Git
+# Project Files
 .git
 .gitignore
-
-# Docker
-Dockerfile
-docker-compose*.yml
 .dockerignore
+Dockerfile
+fly.toml # Fly.io configuration file
 
-# IDE
-.vscode
-.idea
-*.suo
-*.ntvs*
-*.njsproj
-*.sln
-
-# OS
+# Environment/Configuration Files
+.env
 .DS_Store
-Thumbs.db
-
-# Testing
-coverage
-.nyc_output
-
-# Logs
-logs
 *.log
 
-# Temp files
+# Development/Testing files and directories (adjust as needed)
+test
+tests
+docs
+coverage
 tmp
-temp
+*~
+# Any files generated during development or testing, e.g.:
+dist
+build

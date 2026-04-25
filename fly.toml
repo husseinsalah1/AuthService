@@ -1,8 +1,8 @@
 # Fly.io — from this directory run: `fly deploy`
-# Set `app` to your real Fly app name (`fly apps list`).
+# See https://fly.io/docs/reference/configuration/
 
-app = "auth"
-primary_region = "iad"
+app = "authservice-rm"
+primary_region = "ams"
 
 [build]
   dockerfile = "Dockerfile"
@@ -17,6 +17,7 @@ primary_region = "iad"
   auto_stop_machines = "stop"
   auto_start_machines = true
   min_machines_running = 0
+  processes = ["app"]
 
 [[vm]]
   memory = "512mb"
