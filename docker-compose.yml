@@ -24,9 +24,11 @@ services:
       DB_HOST: postgres
       DB_PORT: 5432
       DB_SSL: 'false'
-      # Read before REDIS_URL (see resolve-redis-url.ts). Default: same Compose network as `redis`.
-      # If that fails on your machine (e.g. some Windows setups), set REDIS_DOCKER_URL in `.env`.
-      REDIS_DOCKER_URL: ${REDIS_DOCKER_URL:-redis://redis:6379}
+      # Literal URL so a blank REDIS_DOCKER_URL= line in host `.env` cannot wipe this out.
+      # If `redis` DNS fails (some Docker Desktop setups), use docker-compose.override.yml:
+      #   environment:
+      #     REDIS_DOCKER_URL: redis://host.docker.internal:6379
+      REDIS_DOCKER_URL: redis://redis:6379
       NODE_OPTIONS: --dns-result-order=ipv4first
     depends_on:
       postgres:
