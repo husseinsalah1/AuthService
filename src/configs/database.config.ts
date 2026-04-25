@@ -9,6 +9,6 @@ export default registerAs('database', () => ({
     name: process.env.DB_NAME,
     synchronize: process.env.DB_SYNC === 'true',
     logging: process.env.DB_LOGGING === 'true',
-    /** Neon / RDS often require TLS; local Postgres in Docker does not. */
+    /** Neon / RDS often require TLS; local Postgres typically does not. */
     ssl: process.env.DB_SSL === 'true',
 }))
