@@ -3,16 +3,10 @@ import { AppModule } from './app.module';
 import { AppLogger } from './shared/logger';
 import { BadRequestException, ValidationPipe } from '@nestjs/common';
 import { formatValidationErrors } from './shared/errors/utils/validation-error.util';
-import { DataSource } from 'typeorm';
-import { seedPermissions } from './database/seeders/permissions.seeder';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   const logger = new AppLogger("NestApplication")
-
-  const dataSource = app.get(DataSource);
-
-  await seedPermissions(dataSource);
 
   app.useGlobalPipes(
     new ValidationPipe({
@@ -27,9 +21,10 @@ async function bootstrap() {
       },
     }),
   );
-  await app.listen(process.env.PORT || 3000, '0.0.0.0');
+  const port = process.env.PORT || 8000;
+  await app.listen(port, '0.0.0.0');
 
-  logger.log("Auth Service is running on port 3000")
+  logger.log(`Auth Service is running on port ${port}`) 
 
 }
 

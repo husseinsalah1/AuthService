@@ -8,6 +8,7 @@ import { Repository, Not } from 'typeorm';
 import { Role } from './entities/role.entity';
 import { CreateRoleDto, UpdateRoleDto } from './dtos';
 import { PermissionsService } from '../permissions/permissions.service';
+import { Meta } from 'src/shared/interceptors/transform.interceptor';
 
 
 @Injectable()
@@ -39,13 +40,33 @@ export class RolesService {
 
         return this.rolesRepository.save(role);
     }
-
-    async findAll(): Promise<Role[]> {
-        return this.rolesRepository.find({
+    
+    async findAll(page: number = 1, limit: number = 10){
+        const [roles, total] = await this.rolesRepository.findAndCount({
+            relations: {
+                permissions: true,
+            },
             order: {
                 createdAt: 'DESC',
             },
+            skip: (page - 1) * limit,
+            take: limit,
         });
+
+        let formattedRolesResponse = roles.map((role) => {
+            return {
+                id: role.id,
+                name: role.name,
+                key: role.key,
+                description: role.description,
+                isActive: role.isActive,
+            };
+        });
+
+        return {
+            message : 'Roles fetched successfully',
+            data: roles,
+        };
     }
 
     async findActive(): Promise<Role[]> {

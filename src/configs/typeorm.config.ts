@@ -19,9 +19,9 @@ export const typeORMConfig: TypeOrmModuleAsyncOptions = {
             username: configService.get<string>('database.username'),
             password: configService.get<string>('database.password'),
             database: configService.get<string>('database.name'),
-
             autoLoadEntities: true,
             ssl: configService.get<boolean>('database.ssl'),
+            migrations: ['dist/database/migrations/*.js'],
 
             synchronize: configService.get<boolean>('database.synchronize'),
             logging: configService.get<boolean>('database.logging'),
