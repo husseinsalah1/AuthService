@@ -4,7 +4,7 @@ import { AppLogger } from "../../shared/logger";
 import { User } from "./entities/user.entity";
 import { FindOptionsWhere, Repository } from "typeorm";
 import { CreateUserDto, UpdateUserDto } from "./dtos";
-import { UserStatus } from "./enums";
+import { UserStatus, UserType } from "./enums";
 import { PasswordService } from "../password/password.service";
 import { RolesService } from "../roles/roles.service";
 import { CreateUserCommand } from "./commands/create-user.command";
@@ -22,6 +22,19 @@ export class UsersService {
 
     ) { }
 
+    private mapRoleKeyToUserType(roleKey?: string): UserType {
+        switch (roleKey) {
+            case UserType.SUPPLIER:
+                return UserType.SUPPLIER;
+            case UserType.ADMIN:
+                return UserType.ADMIN;
+            case UserType.SUPERADMIN:
+                return UserType.SUPERADMIN;
+            default:
+                return UserType.USER;
+        }
+    }
+
 
     async create(command: CreateUserCommand) {
         const { email, phoneNumber } = command
@@ -36,16 +49,21 @@ export class UsersService {
         }
 
         command.password = await this.passwordService.hash(command.password)
-        const role = await this.rolesService.findByKey("USER")
-        command.roleId = role.id
+        let roleKey = UserType.USER;
+        if (!command.roleId) {
+            const role = await this.rolesService.findByKey(UserType.USER);
+            command.roleId = role.id;
+            roleKey = role.key as UserType;
+        } else {
+            const role = await this.rolesService.findOne(command.roleId);
+            roleKey = role.key as UserType;
+        }
+        command.userType = command.userType ?? this.mapRoleKeyToUserType(roleKey);
         const user = this.userRepo.create(command)
         const saved = await this.userRepo.save(user)
 
-        this.logger.log(`User Created → ${saved.id}`)
-        return {
-            ...saved,
-            role
-        }
+        this.logger.log(`User Created → ${saved.id} with role ${saved.role?.name}`)
+        return saved
     }
 
     async findByEmail(email: string) {
@@ -72,6 +90,20 @@ export class UsersService {
 
     }
 
+    async findAuthUserById(id: string) {
+        const user = await this.userRepo.findOne({
+            where: { id },
+            relations: {
+                role: {
+                    permissions: true,
+                },
+            },
+        });
+
+        if (!user) throw new NotFoundException(`User ${id} not found`);
+        return user;
+    }
+
     async findWithPasswordByIdentifier(where: FindOptionsWhere<User>) {
         const user = await this.userRepo.findOne({
             where,
@@ -87,6 +119,7 @@ export class UsersService {
                 countryCode: true,
                 password: true,
                 role: true,
+                userType: true,
                 status: true,
                 isPhoneVerified: true,
                 isEmailVerified: true,

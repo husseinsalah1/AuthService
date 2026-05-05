@@ -1,4 +1,5 @@
 import {
+    BadRequestException,
     ConflictException,
     Injectable,
     NotFoundException,
@@ -193,7 +194,23 @@ export class RolesService {
         roleId: string,
         permissionIds: string[],
     ): Promise<Role> {
-        const role = await this.findOneWithPermissions(roleId);
+        const role = await this.rolesRepository.findOne({
+            where: { id: roleId },
+            relations: {
+                permissions: true,
+            },
+        });
+
+        if (!role) {
+            throw new NotFoundException('Role not found');
+        }
+
+        const fixedPermissionRoleKeys = new Set(['USER', 'SUPPLIER']);
+        if (fixedPermissionRoleKeys.has(role.key)) {
+            throw new BadRequestException(
+                `Role ${role.key} has fixed permissions and cannot be changed`,
+            );
+        }
 
         const permissions = await this.permissionsService.findByIds(permissionIds);
 

@@ -36,6 +36,32 @@ const permissions: PermissionSeed[] = [
         description: 'Can delete users',
     },
 
+    // Admins
+    {
+        name: 'Create Admins',
+        key: PermissionKey.ADMINS_CREATE,
+        group: 'admins',
+        description: 'Can create admin users',
+    },
+    {
+        name: 'Read Admins',
+        key: PermissionKey.ADMINS_READ,
+        group: 'admins',
+        description: 'Can view admin users',
+    },
+    {
+        name: 'Update Admins',
+        key: PermissionKey.ADMINS_UPDATE,
+        group: 'admins',
+        description: 'Can update admin users',
+    },
+    {
+        name: 'Delete Admins',
+        key: PermissionKey.ADMINS_DELETE,
+        group: 'admins',
+        description: 'Can delete admin users',
+    },
+
     // Roles
     {
         name: 'Create Roles',

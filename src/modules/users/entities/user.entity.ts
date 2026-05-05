@@ -10,6 +10,7 @@ import {
     Index
 } from 'typeorm';
 import { UserStatus } from '../enums/user-status.enum';
+import { UserType } from '../enums/user-type.enum';
 import { Role } from 'src/modules/roles/entities/role.entity';
 
 @Entity('users')
@@ -52,6 +53,9 @@ export class User {
 
     @Column({ type: 'enum', enum: UserStatus, default: UserStatus.PENDING_VERIFICATION })
     status: UserStatus;
+
+    @Column({ type: 'enum', enum: UserType, default: UserType.USER })
+    userType: UserType;
 
     @Column({ type: 'timestamptz', nullable: true })
     lastLoginAt: Date;

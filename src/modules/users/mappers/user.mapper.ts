@@ -14,6 +14,7 @@ export class UserMapper {
             isPhoneVerified: user.isPhoneVerified,
             isEmailVerified: user.isEmailVerified,
             status: user.status,
+            userType: user.userType,
 
             role: user.role
                 ? {

@@ -19,6 +19,8 @@ import { HealthController } from './health.controller';
 import { resolveRedisUrl } from './configs/resolve-redis-url';
 import { RolesModule } from './modules/roles/roles.module';
 import { PermissionsModule } from './modules/permissions/permissions.module';
+import { AdminsModule } from './modules/admins/admins.module';
+import { PermissionsGuard } from './shared/guards/permissions.guard';
 
 @Module({
   imports: [
@@ -42,13 +44,18 @@ import { PermissionsModule } from './modules/permissions/permissions.module';
     RedisModule,
     OtpModule,
     RolesModule,
-    PermissionsModule
+    PermissionsModule,
+    AdminsModule
   ],
   controllers: [HealthController],
   providers: [
     {
       provide: APP_GUARD,
       useClass: JwtAuthGuard,
+    },
+    {
+      provide: APP_GUARD,
+      useClass: PermissionsGuard,
     },
     {
       provide: APP_INTERCEPTOR,

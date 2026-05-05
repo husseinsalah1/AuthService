@@ -4,6 +4,11 @@ export enum PermissionKey {
     USERS_UPDATE = 'users.update',
     USERS_DELETE = 'users.delete',
 
+    ADMINS_CREATE = 'admins.create',
+    ADMINS_READ = 'admins.read',
+    ADMINS_UPDATE = 'admins.update',
+    ADMINS_DELETE = 'admins.delete',
+
 
     ROLES_CREATE = 'roles.create',
     ROLES_READ = 'roles.read',

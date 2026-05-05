@@ -2,12 +2,14 @@ import 'dotenv/config';
 import dataSource from '../../configs/typeorm.datasource';
 import { seedPermissions } from './permissions.seeder';
 import { seederRole } from './role.seeder';
+import { seedSuperAdminCredentials } from './super-admin.seeder';
 
 async function runSeeders(): Promise<void> {
   try {
     await dataSource.initialize();
     await seedPermissions(dataSource);
     await seederRole(dataSource);
+    await seedSuperAdminCredentials(dataSource);
   } finally {
     if (dataSource.isInitialized) {
       await dataSource.destroy();

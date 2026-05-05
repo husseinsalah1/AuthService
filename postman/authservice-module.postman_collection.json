@@ -1,0 +1,283 @@
+{
+  "info": {
+    "name": "AuthService Module",
+    "_postman_id": "94f6ef84-7800-4f15-8949-8f84db72c3d5",
+    "description": "Module-based collection for the whole AuthService project with one shared login token flow.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{accessToken}}",
+        "type": "string"
+      }
+    ]
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:3000" },
+    { "key": "accessToken", "value": "" },
+    { "key": "refreshToken", "value": "" },
+    { "key": "userId", "value": "" },
+    { "key": "roleId", "value": "" },
+    { "key": "permissionId", "value": "" },
+    { "key": "identifierType", "value": "EMAIL" },
+    { "key": "identifier", "value": "superadmin@example.com" },
+    { "key": "password", "value": "SuperAdmin123!" },
+    { "key": "registerEmail", "value": "register.user@example.com" },
+    { "key": "registerPhone", "value": "1012345678" },
+    { "key": "countryCode", "value": "EG" },
+    { "key": "otpCode", "value": "123456" },
+    { "key": "resetToken", "value": "RESET_TOKEN_HERE" }
+  ],
+  "item": [
+    {
+      "name": "Health Module",
+      "item": [
+        {
+          "name": "Health Check",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/health", "host": ["{{baseUrl}}"], "path": ["health"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Auth Module",
+      "item": [
+        {
+          "name": "Register",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"firstName\": \"Register\",\n  \"lastName\": \"User\",\n  \"email\": \"{{registerEmail}}\",\n  \"password\": \"{{password}}\",\n  \"phoneNumber\": \"{{registerPhone}}\",\n  \"countryCode\": \"{{countryCode}}\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/auth/register", "host": ["{{baseUrl}}"], "path": ["auth", "register"] }
+          }
+        },
+        {
+          "name": "Login (Shared Token For All Modules)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const json = pm.response.json();",
+                  "pm.collectionVariables.set('accessToken', json?.data?.tokens?.accessToken || '');",
+                  "pm.collectionVariables.set('refreshToken', json?.data?.tokens?.refreshToken || '');",
+                  "pm.collectionVariables.set('userId', json?.data?.id || '');"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"identifierType\": \"{{identifierType}}\",\n  \"identifier\": \"{{identifier}}\",\n  \"password\": \"{{password}}\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/auth/login", "host": ["{{baseUrl}}"], "path": ["auth", "login"] }
+          }
+        },
+        {
+          "name": "Refresh",
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{refreshToken}}", "type": "string" }] },
+            "method": "POST",
+            "url": { "raw": "{{baseUrl}}/auth/refresh", "host": ["{{baseUrl}}"], "path": ["auth", "refresh"] }
+          }
+        },
+        {
+          "name": "Me",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/auth/me", "host": ["{{baseUrl}}"], "path": ["auth", "me"] }
+          }
+        },
+        {
+          "name": "Forgot Password",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"identifierType\": \"EMAIL\",\n  \"identifier\": \"{{identifier}}\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/auth/forgot-password", "host": ["{{baseUrl}}"], "path": ["auth", "forgot-password"] }
+          }
+        },
+        {
+          "name": "Reset Password",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"token\": \"{{resetToken}}\",\n  \"newPassword\": \"{{password}}\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/auth/reset-password", "host": ["{{baseUrl}}"], "path": ["auth", "reset-password"] }
+          }
+        },
+        {
+          "name": "Send OTP",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"identifierType\": \"PHONE_NUMBER\",\n  \"identifier\": \"{{registerPhone}}\",\n  \"countryCode\": \"{{countryCode}}\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/auth/send-otp", "host": ["{{baseUrl}}"], "path": ["auth", "send-otp"] }
+          }
+        },
+        {
+          "name": "Verify OTP",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"identifierType\": \"PHONE_NUMBER\",\n  \"identifier\": \"{{registerPhone}}\",\n  \"countryCode\": \"{{countryCode}}\",\n  \"code\": \"{{otpCode}}\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/auth/verify-otp", "host": ["{{baseUrl}}"], "path": ["auth", "verify-otp"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Users Module",
+      "item": [
+        {
+          "name": "Get User By Id",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/users/{{userId}}", "host": ["{{baseUrl}}"], "path": ["users", "{{userId}}"] }
+          }
+        },
+        {
+          "name": "Update User",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"firstName\": \"Updated\",\n  \"lastName\": \"User\"\n}" },
+            "url": { "raw": "{{baseUrl}}/users/{{userId}}", "host": ["{{baseUrl}}"], "path": ["users", "{{userId}}"] }
+          }
+        },
+        {
+          "name": "Delete User",
+          "request": {
+            "method": "DELETE",
+            "url": { "raw": "{{baseUrl}}/users/{{userId}}", "host": ["{{baseUrl}}"], "path": ["users", "{{userId}}"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Roles Module",
+      "item": [
+        {
+          "name": "Create Role",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const json = pm.response.json();",
+                  "pm.collectionVariables.set('roleId', json?.data?.id || json?.id || '');"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"name\": \"Support Access\"\n}" },
+            "url": { "raw": "{{baseUrl}}/roles", "host": ["{{baseUrl}}"], "path": ["roles"] }
+          }
+        },
+        { "name": "Get Roles", "request": { "method": "GET", "url": { "raw": "{{baseUrl}}/roles", "host": ["{{baseUrl}}"], "path": ["roles"] } } },
+        { "name": "Get Active Roles", "request": { "method": "GET", "url": { "raw": "{{baseUrl}}/roles/active", "host": ["{{baseUrl}}"], "path": ["roles", "active"] } } },
+        { "name": "Get Role By Id", "request": { "method": "GET", "url": { "raw": "{{baseUrl}}/roles/{{roleId}}", "host": ["{{baseUrl}}"], "path": ["roles", "{{roleId}}"] } } },
+        {
+          "name": "Update Role",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"name\": \"Support Access Updated\"\n}" },
+            "url": { "raw": "{{baseUrl}}/roles/{{roleId}}", "host": ["{{baseUrl}}"], "path": ["roles", "{{roleId}}"] }
+          }
+        },
+        {
+          "name": "Assign Permissions To Role",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"permissionIds\": [\"{{permissionId}}\"]\n}" },
+            "url": { "raw": "{{baseUrl}}/roles/{{roleId}}/permissions", "host": ["{{baseUrl}}"], "path": ["roles", "{{roleId}}", "permissions"] }
+          }
+        },
+        { "name": "Delete Role", "request": { "method": "DELETE", "url": { "raw": "{{baseUrl}}/roles/{{roleId}}", "host": ["{{baseUrl}}"], "path": ["roles", "{{roleId}}"] } } }
+      ]
+    },
+    {
+      "name": "Permissions Module",
+      "item": [
+        {
+          "name": "Create Permission",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const json = pm.response.json();",
+                  "pm.collectionVariables.set('permissionId', json?.data?.id || json?.id || '');"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"name\": \"Export Reports\",\n  \"key\": \"reports.export\",\n  \"group\": \"reports\",\n  \"description\": \"Can export reports\"\n}" },
+            "url": { "raw": "{{baseUrl}}/permissions", "host": ["{{baseUrl}}"], "path": ["permissions"] }
+          }
+        },
+        { "name": "Get Permissions", "request": { "method": "GET", "url": { "raw": "{{baseUrl}}/permissions", "host": ["{{baseUrl}}"], "path": ["permissions"] } } },
+        { "name": "Get Active Permissions", "request": { "method": "GET", "url": { "raw": "{{baseUrl}}/permissions/active", "host": ["{{baseUrl}}"], "path": ["permissions", "active"] } } },
+        { "name": "Get Permission By Id", "request": { "method": "GET", "url": { "raw": "{{baseUrl}}/permissions/{{permissionId}}", "host": ["{{baseUrl}}"], "path": ["permissions", "{{permissionId}}"] } } }
+      ]
+    },
+    {
+      "name": "Admins Module",
+      "item": [
+        {
+          "name": "Create Admin",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"firstName\": \"Admin\",\n  \"lastName\": \"Created\",\n  \"email\": \"admin.created@example.com\",\n  \"password\": \"{{password}}\",\n  \"phoneNumber\": \"1012345679\",\n  \"countryCode\": \"{{countryCode}}\",\n  \"roleType\": \"ADMIN\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/admins", "host": ["{{baseUrl}}"], "path": ["admins"] }
+          }
+        }
+      ]
+    }
+  ]
+}

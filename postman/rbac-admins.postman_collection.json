@@ -1,0 +1,408 @@
+{
+  "info": {
+    "name": "Auth Service - RBAC Professional",
+    "_postman_id": "d14f6de4-7de2-492e-a282-47d688ca587b",
+    "description": "Professional RBAC collection for USER/SUPPLIER/ADMIN/SUPER_ADMIN. Includes login bootstrap, token capture, positive and negative permission scenarios, and ready-to-run request organization.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "pm.collectionVariables.set('nowIso', new Date().toISOString());",
+          "if (!pm.collectionVariables.get('randomSuffix')) {",
+          "  pm.collectionVariables.set('randomSuffix', Math.floor(Math.random() * 100000).toString());",
+          "}"
+        ]
+      }
+    }
+  ],
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:3000" },
+    { "key": "superAdminEmail", "value": "superadmin@example.com" },
+    { "key": "adminEmail", "value": "admin@example.com" },
+    { "key": "supplierEmail", "value": "supplier@example.com" },
+    { "key": "userEmail", "value": "user@example.com" },
+    { "key": "defaultPassword", "value": "TestPassword123!" },
+    { "key": "superAdminAccessToken", "value": "" },
+    { "key": "adminAccessToken", "value": "" },
+    { "key": "supplierAccessToken", "value": "" },
+    { "key": "userAccessToken", "value": "" },
+    { "key": "superAdminRefreshToken", "value": "" },
+    { "key": "adminRefreshToken", "value": "" },
+    { "key": "supplierRefreshToken", "value": "" },
+    { "key": "userRefreshToken", "value": "" },
+    { "key": "userId", "value": "" },
+    { "key": "supplierUserId", "value": "" },
+    { "key": "adminUserId", "value": "" },
+    { "key": "superAdminUserId", "value": "" },
+    { "key": "targetUserId", "value": "" },
+    { "key": "adminCreateEmail", "value": "new.admin.{{randomSuffix}}@example.com" },
+    { "key": "roleNameToCreate", "value": "Ops Role {{randomSuffix}}" },
+    { "key": "nowIso", "value": "" },
+    { "key": "randomSuffix", "value": "" }
+  ],
+  "item": [
+    {
+      "name": "01 - Authentication Bootstrap",
+      "item": [
+        {
+          "name": "Login Super Admin",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status is 201 or 200', function () {",
+                  "  pm.expect([200, 201]).to.include(pm.response.code);",
+                  "});",
+                  "const json = pm.response.json();",
+                  "pm.collectionVariables.set('superAdminAccessToken', json?.data?.tokens?.accessToken || '');",
+                  "pm.collectionVariables.set('superAdminRefreshToken', json?.data?.tokens?.refreshToken || '');",
+                  "pm.collectionVariables.set('superAdminUserId', json?.data?.id || '');"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"identifierType\": \"EMAIL\",\n  \"identifier\": \"{{superAdminEmail}}\",\n  \"password\": \"{{defaultPassword}}\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/auth/login", "host": ["{{baseUrl}}"], "path": ["auth", "login"] }
+          }
+        },
+        {
+          "name": "Login Admin",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status is 201 or 200', function () {",
+                  "  pm.expect([200, 201]).to.include(pm.response.code);",
+                  "});",
+                  "const json = pm.response.json();",
+                  "pm.collectionVariables.set('adminAccessToken', json?.data?.tokens?.accessToken || '');",
+                  "pm.collectionVariables.set('adminRefreshToken', json?.data?.tokens?.refreshToken || '');",
+                  "pm.collectionVariables.set('adminUserId', json?.data?.id || '');"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"identifierType\": \"EMAIL\",\n  \"identifier\": \"{{adminEmail}}\",\n  \"password\": \"{{defaultPassword}}\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/auth/login", "host": ["{{baseUrl}}"], "path": ["auth", "login"] }
+          }
+        },
+        {
+          "name": "Login Supplier",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status is 201 or 200', function () {",
+                  "  pm.expect([200, 201]).to.include(pm.response.code);",
+                  "});",
+                  "const json = pm.response.json();",
+                  "pm.collectionVariables.set('supplierAccessToken', json?.data?.tokens?.accessToken || '');",
+                  "pm.collectionVariables.set('supplierRefreshToken', json?.data?.tokens?.refreshToken || '');",
+                  "pm.collectionVariables.set('supplierUserId', json?.data?.id || '');"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"identifierType\": \"EMAIL\",\n  \"identifier\": \"{{supplierEmail}}\",\n  \"password\": \"{{defaultPassword}}\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/auth/login", "host": ["{{baseUrl}}"], "path": ["auth", "login"] }
+          }
+        },
+        {
+          "name": "Login User",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status is 201 or 200', function () {",
+                  "  pm.expect([200, 201]).to.include(pm.response.code);",
+                  "});",
+                  "const json = pm.response.json();",
+                  "pm.collectionVariables.set('userAccessToken', json?.data?.tokens?.accessToken || '');",
+                  "pm.collectionVariables.set('userRefreshToken', json?.data?.tokens?.refreshToken || '');",
+                  "pm.collectionVariables.set('userId', json?.data?.id || '');",
+                  "pm.collectionVariables.set('targetUserId', json?.data?.id || '');"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"identifierType\": \"EMAIL\",\n  \"identifier\": \"{{userEmail}}\",\n  \"password\": \"{{defaultPassword}}\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/auth/login", "host": ["{{baseUrl}}"], "path": ["auth", "login"] }
+          }
+        },
+        {
+          "name": "Auth Me (Super Admin)",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{superAdminAccessToken}}" }
+            ],
+            "url": { "raw": "{{baseUrl}}/auth/me", "host": ["{{baseUrl}}"], "path": ["auth", "me"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "02 - Admins Module",
+      "item": [
+        {
+          "name": "Create Admin As Super Admin",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('created successfully', function () {",
+                  "  pm.expect([200, 201]).to.include(pm.response.code);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{superAdminAccessToken}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"firstName\": \"New\",\n  \"lastName\": \"Admin\",\n  \"email\": \"{{adminCreateEmail}}\",\n  \"password\": \"{{defaultPassword}}\",\n  \"phoneNumber\": \"1012345678\",\n  \"countryCode\": \"EG\",\n  \"roleType\": \"ADMIN\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/admins", "host": ["{{baseUrl}}"], "path": ["admins"] }
+          }
+        },
+        {
+          "name": "Create Admin As User (Should Fail)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('forbidden for user', function () {",
+                  "  pm.expect([401, 403]).to.include(pm.response.code);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{userAccessToken}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"firstName\": \"Blocked\",\n  \"lastName\": \"Admin\",\n  \"email\": \"blocked.admin@example.com\",\n  \"password\": \"TestPassword123!\",\n  \"phoneNumber\": \"1012345677\",\n  \"countryCode\": \"EG\",\n  \"roleType\": \"ADMIN\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/admins", "host": ["{{baseUrl}}"], "path": ["admins"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "03 - Users RBAC",
+      "item": [
+        {
+          "name": "Get User By Id As User (Self)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('user can read own profile', function () {",
+                  "  pm.expect(pm.response.code).to.equal(200);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{userAccessToken}}" }],
+            "url": { "raw": "{{baseUrl}}/users/{{userId}}", "host": ["{{baseUrl}}"], "path": ["users", "{{userId}}"] }
+          }
+        },
+        {
+          "name": "Get User By Id As Supplier (Other User - Should Fail)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('supplier cannot access other user profile', function () {",
+                  "  pm.expect([401, 403]).to.include(pm.response.code);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{supplierAccessToken}}" }],
+            "url": { "raw": "{{baseUrl}}/users/{{targetUserId}}", "host": ["{{baseUrl}}"], "path": ["users", "{{targetUserId}}"] }
+          }
+        },
+        {
+          "name": "Delete User As Admin",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('admin can delete users', function () {",
+                  "  pm.expect([200, 204]).to.include(pm.response.code);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Authorization", "value": "Bearer {{adminAccessToken}}" }],
+            "url": { "raw": "{{baseUrl}}/users/{{targetUserId}}", "host": ["{{baseUrl}}"], "path": ["users", "{{targetUserId}}"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "04 - Roles & Permissions RBAC",
+      "item": [
+        {
+          "name": "Get Roles As Admin",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{adminAccessToken}}" }],
+            "url": { "raw": "{{baseUrl}}/roles", "host": ["{{baseUrl}}"], "path": ["roles"] }
+          }
+        },
+        {
+          "name": "Create Role As Admin (Should Fail)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('admin is blocked from role creation', function () {",
+                  "  pm.expect([401, 403]).to.include(pm.response.code);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{adminAccessToken}}" }
+            ],
+            "body": { "mode": "raw", "raw": "{\n  \"name\": \"Operator\"\n}" },
+            "url": { "raw": "{{baseUrl}}/roles", "host": ["{{baseUrl}}"], "path": ["roles"] }
+          }
+        },
+        {
+          "name": "Create Role As Super Admin",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('super admin can create role', function () {",
+                  "  pm.expect([200, 201]).to.include(pm.response.code);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{superAdminAccessToken}}" }
+            ],
+            "body": { "mode": "raw", "raw": "{\n  \"name\": \"{{roleNameToCreate}}\"\n}" },
+            "url": { "raw": "{{baseUrl}}/roles", "host": ["{{baseUrl}}"], "path": ["roles"] }
+          }
+        },
+        {
+          "name": "Get Permissions As Admin",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{adminAccessToken}}" }],
+            "url": { "raw": "{{baseUrl}}/permissions", "host": ["{{baseUrl}}"], "path": ["permissions"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "05 - Utility",
+      "item": [
+        {
+          "name": "Clear Token Variables",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "['superAdminAccessToken','adminAccessToken','supplierAccessToken','userAccessToken','superAdminRefreshToken','adminRefreshToken','supplierRefreshToken','userRefreshToken'].forEach((k) => pm.collectionVariables.unset(k));",
+                  "pm.test('token variables cleared', function () {",
+                  "  pm.expect(true).to.equal(true);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/health", "host": ["{{baseUrl}}"], "path": ["health"] }
+          }
+        }
+      ]
+    }
+  ],
+  "protocolProfileBehavior": {}
+}

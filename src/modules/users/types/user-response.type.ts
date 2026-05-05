@@ -1,4 +1,5 @@
 import { UserStatus } from '../enums/user-status.enum';
+import { UserType } from '../enums/user-type.enum';
 
 export type UserRoleResponse = {
     id: string;
@@ -17,6 +18,7 @@ export type UserResponse = {
     isPhoneVerified: boolean;
     isEmailVerified: boolean;
     status: UserStatus;
+    userType: UserType;
     role?: UserRoleResponse | null;
     lastLoginAt: Date | null;
     createdAt: Date;
