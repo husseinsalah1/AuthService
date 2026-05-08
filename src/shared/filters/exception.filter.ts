@@ -5,14 +5,16 @@ import {
     Catch,
     ExceptionFilter,
 } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { Request, Response } from 'express';
-import { AppLogger } from '../logger';
-import { ApiErrorResponse } from '../errors/types/api-error-response.interface';
-import { ExceptionMapper } from '../errors/mappers/exception.mapper';
+import { AppLogger } from '@/shared/logger';
+import { ApiErrorResponse } from '@/shared/errors/types/api-error-response.interface';
+import { ExceptionMapper } from '@/shared/errors/mappers/exception.mapper';
 
 @Catch()
 export class AllExceptionsFilter implements ExceptionFilter {
     private readonly logger = new AppLogger(AllExceptionsFilter.name);
+    constructor(private readonly configService: ConfigService) {}
 
     catch(exception: unknown, host: ArgumentsHost): void {
         const ctx = host.switchToHttp();
@@ -20,7 +22,7 @@ export class AllExceptionsFilter implements ExceptionFilter {
         const request = ctx.getRequest<Request>();
         const response = ctx.getResponse<Response>();
 
-        const isDev = process.env.NODE_ENV === 'development';
+        const isDev = this.configService.get<string>('NODE_ENV') === 'development';
 
         const mappedError = ExceptionMapper.map(exception);
 

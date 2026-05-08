@@ -1,15 +1,16 @@
 // src/auth/dto/login.dto.ts
 
 import {
+    IsEmail,
     IsEnum,
     IsNotEmpty,
-    IsOptional,
     IsString,
     Length,
     ValidateIf,
 } from 'class-validator';
 import { CountryCode } from 'libphonenumber-js';
-import { IdentifierType } from '../enums/identifier-type.enum';
+import { IdentifierType } from '@/modules/auth/enums/identifier-type.enum';
+import { IsValidPhoneNumber } from '@/shared/validators/is-valid-phone.validator';
 
 export class LoginDto {
     @IsEnum(IdentifierType)
@@ -18,6 +19,10 @@ export class LoginDto {
 
     @IsString()
     @IsNotEmpty()
+    @ValidateIf((o) => o.identifierType !== IdentifierType.PHONE_NUMBER)
+    @IsEmail()
+    @ValidateIf((o) => o.identifierType === IdentifierType.PHONE_NUMBER)
+    @IsValidPhoneNumber()
     identifier: string;
 
     @ValidateIf((o) => {

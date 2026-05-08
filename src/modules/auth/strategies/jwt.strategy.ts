@@ -3,8 +3,8 @@ import { ConfigService } from "@nestjs/config";
 import { PassportStrategy } from "@nestjs/passport";
 import { JwtPayload } from "jsonwebtoken";
 import { ExtractJwt, Strategy } from "passport-jwt";
-import { UserStatus } from "../../users/enums";
-import { UsersService } from "../../users/users.service";
+import { UserStatus } from "@/modules/users/enums";
+import { UsersService } from "@/modules/users/users.service";
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy, "jwt") {
@@ -32,6 +32,9 @@ export class JwtStrategy extends PassportStrategy(Strategy, "jwt") {
 
         if (user.status === UserStatus.INACTIVE) {
             throw new UnauthorizedException('User is inactive');
+        }
+        if (user.status === UserStatus.PENDING_VERIFICATION) {
+            throw new UnauthorizedException('User is pending verification');
         }
 
         return user;

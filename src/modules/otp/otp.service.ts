@@ -1,11 +1,12 @@
 import { BadRequestException, Injectable, NotFoundException } from "@nestjs/common";
-import { RedisService } from "../redis/redis.service";
-import { AppLogger } from "../../shared/logger";
-import { IdentifierType } from "../auth/enums/identifier-type.enum";
+import { RedisService } from "@/modules/redis/redis.service";
+import { AppLogger } from "@/shared/logger";
+import { IdentifierType } from "@/modules/auth/enums/identifier-type.enum";
+import { randomInt } from "crypto";
 
 
 
-const OTP_TTL_SECONDS = 10;       // 10 minutes
+const OTP_TTL_SECONDS = 10 * 60; // 10 minutes
 const OTP_KEY_PREFIX = 'otp:';
 const ATTEMPT_KEY_PREFIX = 'otp_attempts:';
 const MAX_ATTEMPTS = 5;
@@ -47,7 +48,8 @@ export class OtpService {
             message = await this.viaEmail(identifier, otp)
         }
 
-        this.logger.log(`[DEV ONLY] ${message}`)
+        // Never log OTP values or secrets.
+        this.logger.log(`OTP generated for ${type} identifier`)
 
         return { message: 'OTP sent successfully', expiresInMinutes: 10 };
     }
@@ -98,6 +100,6 @@ export class OtpService {
     }
 
     private generateOtp(): string {
-        return "123456"
+        return randomInt(100000, 1000000).toString()
     }
 }

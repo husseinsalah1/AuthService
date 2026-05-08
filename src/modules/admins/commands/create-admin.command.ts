@@ -1,5 +1,5 @@
 import { CountryCode } from "libphonenumber-js";
-import { UserStatus, UserType } from "../../users/enums";
+import { UserStatus, UserType } from "@/modules/users/enums";
 
 export interface CreateAdminCommand {
     firstName: string,

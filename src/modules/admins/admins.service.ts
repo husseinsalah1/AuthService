@@ -1,9 +1,9 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
-import { UsersService } from '../users/users.service';
-import { CreateAdminCommand } from './commands/create-admin.command';
-import { normalizePhoneNumber } from '../../shared/utils/phone-number.util'; 
-import { UserStatus, UserType } from '../users/enums';
-import { RolesService } from '../roles/roles.service';
+import { UsersService } from '@/modules/users/users.service';
+import { CreateAdminCommand } from '@/modules/admins/commands/create-admin.command';
+import { normalizePhoneNumber } from '@/shared/utils/phone-number.util'; 
+import { UserStatus, UserType } from '@/modules/users/enums';
+import { RolesService } from '@/modules/roles/roles.service';
 @Injectable()
 export class AdminsService {
     constructor(

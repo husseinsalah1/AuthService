@@ -1,4 +1,4 @@
-import { ErrorItem } from "./error-item.interface";
+import { ErrorItem } from "@/shared/errors/types/error-item.interface";
 
 export interface MappedException {
     statusCode: number;

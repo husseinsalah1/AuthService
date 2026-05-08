@@ -4,6 +4,7 @@ import {
     CountryCode,
     parsePhoneNumberFromString,
 } from 'libphonenumber-js';
+import { BadRequestException } from '@nestjs/common';
 
 export interface NormalizedPhoneNumber {
     phoneNumber: string; // +201032929703
@@ -19,7 +20,7 @@ export function normalizePhoneNumber(
     const phone = parsePhoneNumberFromString(phoneNumber.trim(), countryCode);
 
     if (!phone || !phone.isValid()) {
-        throw new Error('Invalid phone number');
+        throw new BadRequestException('Invalid phone number');
     }
 
     return {

@@ -1,2 +1,2 @@
-export * from './jwt-payload.interface';
-export * from './request-with-user.interface';
+export * from '@/shared/interfaces/jwt-payload.interface';
+export * from '@/shared/interfaces/request-with-user.interface';

@@ -2,8 +2,8 @@
 
 import { HttpStatus } from '@nestjs/common';
 import { QueryFailedError } from 'typeorm';
-import { extractDuplicateMessage } from '../utils/duplicate-error.util';
-import { MappedException } from '../types/mapped-exception.interface';
+import { extractDuplicateMessage } from '@/shared/errors/utils/duplicate-error.util';
+import { MappedException } from '@/shared/errors/types/mapped-exception.interface';
 
 interface PostgresDriverError {
     code?: string;

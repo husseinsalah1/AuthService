@@ -4,11 +4,22 @@ import {
     OnModuleDestroy,
 } from '@nestjs/common';
 import { createClient, RedisClientType } from 'redis';
-import { AppLogger } from '../../shared/logger';
-import { resolveRedisUrl } from '../../configs/resolve-redis-url';
+import { AppLogger } from '@/shared/logger';
+import { resolveRedisUrl } from '@/configs/resolve-redis-url';
 
 @Injectable()
 export class RedisService implements OnModuleInit, OnModuleDestroy {
+    private sanitizeKey(key: string): string {
+        if (key.startsWith('password-reset:')) {
+            return 'password-reset:[REDACTED]';
+        }
+        return key;
+    }
+
+    private sanitizeKeys(keys: string[]): string[] {
+        return keys.map((key) => this.sanitizeKey(key));
+    }
+
     private readonly logger = new AppLogger(RedisService.name);
     private client: RedisClientType;
 
@@ -37,7 +48,7 @@ export class RedisService implements OnModuleInit, OnModuleDestroy {
     /** Store a key with a TTL in seconds */
     async set(key: string, value: string, ttlSeconds: number): Promise<void> {
         await this.client.set(key, value, { EX: ttlSeconds });
-        this.logger.debug(`SET ${key} (TTL: ${ttlSeconds}s)`);
+        this.logger.debug(`SET ${this.sanitizeKey(key)} (TTL: ${ttlSeconds}s)`);
     }
 
     /** Retrieve a value — returns null if missing or expired */
@@ -49,7 +60,7 @@ export class RedisService implements OnModuleInit, OnModuleDestroy {
     /** Delete one or more keys */
     async del(...keys: string[]): Promise<void> {
         await this.client.del(keys);
-        this.logger.debug(`DEL ${keys.join(', ')}`);
+        this.logger.debug(`DEL ${this.sanitizeKeys(keys).join(', ')}`);
     }
 
     /** Remaining TTL in seconds (-1 = no TTL, -2 = key not found) */

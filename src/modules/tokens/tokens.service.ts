@@ -2,10 +2,11 @@ import { Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import type { StringValue } from 'ms';
-import { User } from '../users/entities/user.entity';
-import { JwtPayload } from '../../shared/interfaces';
-import { AuthTokens } from '../auth/interfaces';
-import { UserResponse } from '../users/types/user-response.type';
+import { User } from '@/modules/users/entities/user.entity';
+import { JwtPayload } from '@/shared/interfaces';
+import { AuthTokens } from '@/modules/auth/interfaces';
+import { UserResponse } from '@/modules/users/types/user-response.type';
+import { randomUUID } from 'crypto';
 
 @Injectable()
 export class TokensService {
@@ -15,12 +16,14 @@ export class TokensService {
     ) { }
 
     async generateTokens(user: User): Promise<AuthTokens> {
+        const jti = randomUUID();
         const payload: JwtPayload = {
             sub: user.id,
             email: user.email,
             phoneNumber: user.phoneNumber,
             countryCode: user.countryCode,
             role: user?.role?.key || "",
+            jti,
         };
 
         const accessExpiresIn = this.configService.get<string>('jwt.accessExpiresIn') as StringValue;

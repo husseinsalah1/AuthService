@@ -1,14 +1,14 @@
 import { Module } from '@nestjs/common';
 import { PassportModule } from '@nestjs/passport';
-import { AuthService } from './auth.service';
-import { AuthController } from './auth.controller';
-import { JwtStrategy } from './strategies/jwt.strategy';
-import { JwtRefreshStrategy } from './strategies/jwt-refresh.strategy';
-import { UsersModule } from '../users/users.module';
-import { TokensModule } from '../tokens/tokens.module';
-import { OtpModule } from '../otp/otp.module';
-import { PasswordModule } from '../password/password.module';
-import { RolesModule } from '../roles/roles.module';
+import { AuthService } from '@/modules/auth/auth.service';
+import { AuthController } from '@/modules/auth/auth.controller';
+import { JwtStrategy } from '@/modules/auth/strategies/jwt.strategy';
+import { JwtRefreshStrategy } from '@/modules/auth/strategies/jwt-refresh.strategy';
+import { UsersModule } from '@/modules/users/users.module';
+import { TokensModule } from '@/modules/tokens/tokens.module';
+import { OtpModule } from '@/modules/otp/otp.module';
+import { PasswordModule } from '@/modules/password/password.module';
+import { RolesModule } from '@/modules/roles/roles.module';
 
 @Module({
     imports: [

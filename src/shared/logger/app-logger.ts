@@ -1,6 +1,6 @@
 // src/common/logger/app.logger.ts
-import { LogLevel } from './logger.enum';
-import { formatMessage } from './logger.formatter';
+import { LogLevel } from '@/shared/logger/logger.enum';
+import { formatMessage } from '@/shared/logger/logger.formatter';
 
 export class AppLogger {
     private readonly context: string;

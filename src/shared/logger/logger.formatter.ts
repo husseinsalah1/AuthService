@@ -1,6 +1,6 @@
 // src/common/logger/logger.formatter.ts
-import { LogLevel } from './logger.enum';
-import { colorize } from './logger.colors';
+import { LogLevel } from '@/shared/logger/logger.enum';
+import { colorize } from '@/shared/logger/logger.colors';
 
 export function formatMessage(
     level: LogLevel,

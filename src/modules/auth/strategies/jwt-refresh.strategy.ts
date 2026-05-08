@@ -43,6 +43,7 @@ export class JwtRefreshStrategy extends PassportStrategy(Strategy, 'jwt-refresh'
             ...payload,
             id: payload.sub,
             refreshToken,
+            jti: payload.jti,
         };
     }
 }

@@ -4,10 +4,10 @@ import {
     IsString,
     IsUUID,
     Length,
-    Matches,
-    MinLength,
 } from "class-validator";
 import { CountryCode } from "libphonenumber-js";
+import { IsValidPhoneNumber } from "@/shared/validators/is-valid-phone.validator";
+import { IsStrongPassword } from "@/shared/validators/is-strong-password.validator";
 
 export class CreateAdminDto {
     @IsNotEmpty()
@@ -23,16 +23,12 @@ export class CreateAdminDto {
     email: string;
 
     @IsNotEmpty()
-    @IsString()
-    @MinLength(8)
-    @Matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z\d]).+$/, {
-        message:
-            'password must contain at least one uppercase letter, one lowercase letter, one number, and one special character',
-    })
+    @IsStrongPassword()
     password: string;
 
     @IsNotEmpty()
     @IsString()
+    @IsValidPhoneNumber()
     phoneNumber: string;
 
     @IsNotEmpty()

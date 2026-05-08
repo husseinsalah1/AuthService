@@ -1,6 +1,6 @@
 import { DataSource } from 'typeorm';
-import { Permission } from '../../modules/permissions/entities/permission.entity';
-import { PermissionKey } from 'src/modules/permissions/enums';
+import { Permission } from '@/modules/permissions/entities/permission.entity';
+import { PermissionKey } from '@/modules/permissions/enums';
 
 type PermissionSeed = {
     name: string;
@@ -34,6 +34,12 @@ const permissions: PermissionSeed[] = [
         key: PermissionKey.USERS_DELETE,
         group: 'users',
         description: 'Can delete users',
+    },
+    {
+        name: 'List Users',
+        key: PermissionKey.USERS_LIST,
+        group: 'users',
+        description: 'Can list users',
     },
 
     // Admins

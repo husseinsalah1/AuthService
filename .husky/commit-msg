@@ -1,0 +1,20 @@
+#!/usr/bin/env sh
+
+MSG_FILE="$1"
+MSG="$(cat "$MSG_FILE")"
+
+# Allowed format examples:
+# feat: add login throttling
+# Fix: correct role permission seed
+PATTERN='^(feat|Fix): .+'
+
+if printf '%s' "$MSG" | grep -Eq "$PATTERN"; then
+  exit 0
+fi
+
+echo "Invalid commit message format."
+echo "Expected: feat|Fix: short description"
+echo "Examples:"
+echo "  feat: add login throttling"
+echo "  Fix: prevent token refresh replay"
+exit 1

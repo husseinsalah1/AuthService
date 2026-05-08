@@ -1,2 +1,2 @@
-export * from './jwt.strategy';
-export * from './jwt-refresh.strategy';
+export * from '@/modules/auth/strategies/jwt.strategy';
+export * from '@/modules/auth/strategies/jwt-refresh.strategy';

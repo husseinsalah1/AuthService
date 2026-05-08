@@ -1,6 +1,6 @@
-import { Inject, Injectable, UnauthorizedException } from "@nestjs/common";
+import { Injectable, UnauthorizedException } from "@nestjs/common";
 import * as bcrypt from 'bcrypt';
-import { RedisService } from "../redis/redis.service";
+import { RedisService } from "@/modules/redis/redis.service";
 import * as crypto from 'crypto';
 
 interface PasswordResetSession {
@@ -12,7 +12,7 @@ interface PasswordResetSession {
 export class PasswordService {
     private readonly saltRounds = 10;
     private readonly prefix = 'password-reset';
-    private readonly ttlSeconds = 2 * 60; // 1 hour
+    private readonly ttlSeconds = 60 * 60; // 1 hour
 
     constructor(
         private readonly redisService: RedisService
@@ -62,7 +62,8 @@ export class PasswordService {
     }
 
     private getKey(token: string): string {
-        return `${this.prefix}:${token}`;
+        const tokenHash = crypto.createHash('sha256').update(token).digest('hex');
+        return `${this.prefix}:${tokenHash}`;
     }
 
 }

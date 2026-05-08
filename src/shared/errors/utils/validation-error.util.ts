@@ -1,7 +1,7 @@
 // src/common/errors/utils/validation-error.util.ts
 
 import { ValidationError } from 'class-validator';
-import { ErrorItem } from '../types/error-item.interface';
+import { ErrorItem } from '@/shared/errors/types/error-item.interface';
 
 export function formatValidationErrors(
     errors: ValidationError[],

@@ -1,8 +1,8 @@
 // src/common/errors/mappers/http-exception.mapper.ts
 
 import { HttpException } from '@nestjs/common';
-import { ErrorItem } from '../types/error-item.interface';
-import { MappedException } from '../types/mapped-exception.interface';
+import { ErrorItem } from '@/shared/errors/types/error-item.interface';
+import { MappedException } from '@/shared/errors/types/mapped-exception.interface';
 
 export class HttpExceptionMapper {
     static map(exception: HttpException): MappedException {

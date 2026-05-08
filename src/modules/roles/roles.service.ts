@@ -6,10 +6,10 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, Not } from 'typeorm';
-import { Role } from './entities/role.entity';
-import { CreateRoleDto, UpdateRoleDto } from './dtos';
-import { PermissionsService } from '../permissions/permissions.service';
-import { Meta } from 'src/shared/interceptors/transform.interceptor';
+import { Role } from '@/modules/roles/entities/role.entity';
+import { PermissionsService } from '@/modules/permissions/permissions.service';
+import { CreateRoleCommand } from '@/modules/roles/commands/create-role.command';
+import { UpdateRoleCommand } from '@/modules/roles/commands/update-role.command';
 
 
 @Injectable()
@@ -29,13 +29,13 @@ export class RolesService {
             .toUpperCase();
     }
 
-    async create(dto: CreateRoleDto): Promise<Role> {
-        const key = this.generateRoleKey(dto.name);
+    async create(command: CreateRoleCommand): Promise<Role> {
+        const key = this.generateRoleKey(command.name);
 
-        await this.ensureRoleIsUnique(dto.name, key);
+        await this.ensureRoleIsUnique(command.name, key);
 
         const role = this.rolesRepository.create({
-            ...dto,
+            ...command,
             key,
         });
 
@@ -54,19 +54,18 @@ export class RolesService {
             take: limit,
         });
 
-        let formattedRolesResponse = roles.map((role) => {
-            return {
-                id: role.id,
-                name: role.name,
-                key: role.key,
-                description: role.description,
-                isActive: role.isActive,
-            };
-        });
-
         return {
             message : 'Roles fetched successfully',
             data: roles,
+            meta: {
+                total,
+                page,
+                limit,
+                pageCount: roles.length,
+                totalPages: Math.ceil(total / limit),
+                hasPreviousPage: page > 1,
+                hasNextPage: page * limit < total,
+            },
         };
     }
 
@@ -105,16 +104,16 @@ export class RolesService {
         return role;
     }
 
-    async update(id: string, dto: UpdateRoleDto): Promise<Role> {
+    async update(id: string, command: UpdateRoleCommand): Promise<Role> {
         const role = await this.findOne(id);
 
-        const newName = dto.name ?? role.name;
-        const newKey = dto.name ? this.generateRoleKey(dto.name) : role.key;
+        const newName = command.name ?? role.name;
+        const newKey = command.name ? this.generateRoleKey(command.name) : role.key;
 
         await this.ensureRoleIsUnique(newName, newKey, id);
 
         Object.assign(role, {
-            ...dto,
+            ...command,
             key: newKey,
         });
 
@@ -131,17 +130,27 @@ export class RolesService {
         key: string,
         excludeId?: string,
     ): Promise<void> {
-        const existingRole = await this.rolesRepository.findOne({
-            where: excludeId
-                ? [
-                    { name, id: Not(excludeId) },
-                    { key, id: Not(excludeId) },
-                ]
-                : [{ name }, { key }],
-        });
+        const normalizedKey = key.toUpperCase();
+        const where = excludeId ? { id: Not(excludeId) } : {};
 
-        if (existingRole) {
+        const existingByName = await this.rolesRepository.findOne({
+            where: {
+                ...where,
+                name,
+            },
+        });
+        if (existingByName) {
             throw new ConflictException('Role name already exists');
+        }
+
+        const existingByKey = await this.rolesRepository.findOne({
+            where: {
+                ...where,
+                key: normalizedKey,
+            },
+        });
+        if (existingByKey) {
+            throw new ConflictException('Role key already exists');
         }
     }
 

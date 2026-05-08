@@ -1,19 +1,4 @@
 import { PartialType } from '@nestjs/mapped-types';
-import { IsEnum, IsOptional } from 'class-validator';
-import { CreateUserDto } from './create-user.dto';
-import { UserStatus } from '../enums/user-status.enum';
+import { CreateUserDto } from '@/modules/users/dtos/create-user.dto';
 
-export class UpdateUserDto extends PartialType(CreateUserDto) {
-    @IsOptional()
-    @IsEnum(UserStatus)
-    status?: UserStatus;
-
-    @IsOptional()
-    passwordResetToken?: string | null;
-
-    @IsOptional()
-    passwordResetExpiresAt?: Date | null;
-
-    @IsOptional()
-    isPhoneVerified?: boolean
-}
+export class UpdateUserDto extends PartialType(CreateUserDto) {}

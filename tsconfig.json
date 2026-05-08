@@ -11,9 +11,16 @@
     "outDir": "./dist",
     "baseUrl": "./",
     "paths": {
-      "src/*": ["src/*"]
+      "src/*": [
+        "src/*"
+      ],
+      "@/*": [
+        "src/*"
+      ]
     },
-    "types": ["node"],
+    "types": [
+      "node"
+    ],
     "incremental": true,
     "skipLibCheck": true,
     "strictNullChecks": false,
@@ -21,6 +28,6 @@
     "strictBindCallApply": false,
     "forceConsistentCasingInFileNames": false,
     "noFallthroughCasesInSwitch": false,
-    "ignoreDeprecations" : "6.0"
+    "ignoreDeprecations": "6.0"
   }
 }

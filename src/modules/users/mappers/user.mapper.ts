@@ -1,5 +1,5 @@
-import { User } from '../entities/user.entity';
-import { UserResponse } from '../types/user-response.type';
+import { User } from '@/modules/users/entities/user.entity';
+import { UserResponse } from '@/modules/users/types/user-response.type';
 
 export class UserMapper {
     static toResponse(user: User): UserResponse {
@@ -8,7 +8,6 @@ export class UserMapper {
             firstName: user.firstName ?? null,
             lastName: user.lastName ?? null,
             email: user.email ?? null,
-            password: user.password,
             phoneNumber: user.phoneNumber ?? null,
             countryCode: user.countryCode ?? null,
             isPhoneVerified: user.isPhoneVerified,
@@ -32,11 +31,5 @@ export class UserMapper {
 
     static toResponseList(users: User[]): UserResponse[] {
         return users.map((user) => this.toResponse(user));
-    }
-
-    private static getFullName(user: User): string | null {
-        const fullName = [user.firstName, user.lastName].filter(Boolean).join(' ');
-
-        return fullName || null;
     }
 }

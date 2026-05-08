@@ -2,7 +2,7 @@
 
 import { BadRequestException } from '@nestjs/common';
 import { CountryCode, parsePhoneNumberFromString } from 'libphonenumber-js';
-import { IdentifierType } from '../../modules/auth/enums/identifier-type.enum';
+import { IdentifierType } from '@/modules/auth/enums/identifier-type.enum';
 
 export interface ParsedLoginIdentifier {
     type: IdentifierType;

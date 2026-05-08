@@ -1,16 +1,22 @@
 import * as bcrypt from 'bcrypt';
 import { DataSource } from 'typeorm';
-import { Role } from 'src/modules/roles/entities/role.entity';
-import { User } from 'src/modules/users/entities/user.entity';
-import { UserStatus, UserType } from 'src/modules/users/enums';
+import { Role } from '@/modules/roles/entities/role.entity';
+import { User } from '@/modules/users/entities/user.entity';
+import { UserStatus, UserType } from '@/modules/users/enums';
 
 const SUPER_ADMIN_ROLE_KEY = 'SUPER_ADMIN';
-const DEFAULT_SUPER_ADMIN_EMAIL = 'superadmin@app.com';
-const DEFAULT_SUPER_ADMIN_PASSWORD = 'Hussein@2025';
 const DEFAULT_SUPER_ADMIN_FIRST_NAME = 'Hussein';
 const DEFAULT_SUPER_ADMIN_LAST_NAME = 'Salah';
 const DEFAULT_SUPER_ADMIN_PHONE = '+201000000001';
 const DEFAULT_SUPER_ADMIN_COUNTRY_CODE = 'EG';
+
+function getRequiredEnv(name: string): string {
+  const value = process.env[name]?.trim();
+  if (!value) {
+    throw new Error(`${name} is required for super admin seeding`);
+  }
+  return value;
+}
 
 export async function seedSuperAdminCredentials(dataSource: DataSource): Promise<void> {
   const userRepository = dataSource.getRepository(User);
@@ -24,8 +30,8 @@ export async function seedSuperAdminCredentials(dataSource: DataSource): Promise
     throw new Error('SUPER_ADMIN role not found. Run role seeder first.');
   }
 
-  const email = process.env.SUPER_ADMIN_EMAIL ?? DEFAULT_SUPER_ADMIN_EMAIL;
-  const password = process.env.SUPER_ADMIN_PASSWORD ?? DEFAULT_SUPER_ADMIN_PASSWORD;
+  const email = getRequiredEnv('SUPER_ADMIN_EMAIL');
+  const password = getRequiredEnv('SUPER_ADMIN_PASSWORD');
   const firstName = process.env.SUPER_ADMIN_FIRST_NAME ?? DEFAULT_SUPER_ADMIN_FIRST_NAME;
   const lastName = process.env.SUPER_ADMIN_LAST_NAME ?? DEFAULT_SUPER_ADMIN_LAST_NAME;
   const phoneNumber = process.env.SUPER_ADMIN_PHONE ?? DEFAULT_SUPER_ADMIN_PHONE;

@@ -1,22 +1,23 @@
-import { ConflictException, Injectable, NotFoundException } from "@nestjs/common";
-import { InjectRepository } from "@nestjs/typeorm";
-import { AppLogger } from "../../shared/logger";
-import { User } from "./entities/user.entity";
-import { FindOptionsWhere, Repository } from "typeorm";
-import { CreateUserDto, UpdateUserDto } from "./dtos";
-import { UserStatus, UserType } from "./enums";
-import { PasswordService } from "../password/password.service";
-import { RolesService } from "../roles/roles.service";
-import { CreateUserCommand } from "./commands/create-user.command";
-import { UserMapper } from "./mappers/user.mapper";
+import { ConflictException, Inject, Injectable, NotFoundException } from "@nestjs/common";
+import { AppLogger } from "@/shared/logger";
+import { User } from "@/modules/users/entities/user.entity";
+import { FindOptionsWhere } from "typeorm";
+import { UserStatus, UserType } from "@/modules/users/enums";
+import { PasswordService } from "@/modules/password/password.service";
+import { RolesService } from "@/modules/roles/roles.service";
+import { CreateUserCommand } from "@/modules/users/commands/create-user.command";
+import { UpdateUserCommand } from "@/modules/users/commands/update-user.command";
+import { UserMapper } from "@/modules/users/mappers/user.mapper";
+import { IUserRepository, USER_REPOSITORY } from "@/modules/users/domain/repositories/user.repository.port";
+import { ListUsersQuery } from "@/modules/users/queries/list-users.query";
 
 @Injectable()
 export class UsersService {
     private readonly logger = new AppLogger(UsersService.name)
 
     constructor(
-        @InjectRepository(User)
-        private readonly userRepo: Repository<User>,
+        @Inject(USER_REPOSITORY)
+        private readonly userRepo: IUserRepository,
         private readonly passwordService: PasswordService,
         private readonly rolesService: RolesService
 
@@ -35,6 +36,36 @@ export class UsersService {
         }
     }
 
+    private async findEntityById(id: string): Promise<User> {
+        const user = await this.userRepo.findByIdWithRole(id);
+        if (!user) throw new NotFoundException(`User ${id} not found`);
+        return user;
+    }
+
+    async findAll(query: ListUsersQuery = {}) {
+        const {
+            page = 1,
+            limit = 10,
+        } = query;
+
+        const { users, total } = await this.userRepo.findAll(query);
+        const pageCount = users.length;
+        const totalPages = Math.ceil(total / limit);
+
+        return {
+            data: users.map((user) => UserMapper.toResponse(user)),
+            message: 'Users fetched successfully',
+            meta: {
+                total,
+                page,
+                limit,
+                pageCount,
+                totalPages,
+                hasPreviousPage: page > 1,
+                hasNextPage: page < totalPages,
+            },
+        };
+    }
 
     async create(command: CreateUserCommand) {
         const { email, phoneNumber } = command
@@ -48,17 +79,19 @@ export class UsersService {
             if (exists) throw new ConflictException("Phone number already in use")
         }
 
+        let roleKey = command.userType ?? UserType.USER;
+
         command.password = await this.passwordService.hash(command.password)
-        let roleKey = UserType.USER;
+        command.userType = this.mapRoleKeyToUserType(roleKey);
+
         if (!command.roleId) {
-            const role = await this.rolesService.findByKey(UserType.USER);
+            const role = await this.rolesService.findByKey(roleKey);
             command.roleId = role.id;
             roleKey = role.key as UserType;
         } else {
             const role = await this.rolesService.findOne(command.roleId);
             roleKey = role.key as UserType;
         }
-        command.userType = command.userType ?? this.mapRoleKeyToUserType(roleKey);
         const user = this.userRepo.create(command)
         const saved = await this.userRepo.save(user)
 
@@ -67,66 +100,28 @@ export class UsersService {
     }
 
     async findByEmail(email: string) {
-        const user = await this.userRepo.findOne({ where: { email } });
+        const user = await this.userRepo.findByEmail(email);
         return user
     }
 
     async findByPhone(phoneNumber: string) {
-        const user = await this.userRepo.findOne({ where: { phoneNumber } });
+        const user = await this.userRepo.findByPhone(phoneNumber);
         return user
     }
 
     // ─── Read ─────────────────────────────────────────────
     async findById(id: string) {
-        const user = await this.userRepo.findOne({
-            where: { id },
-            relations: {
-                role: true,
-            }
-        });
-
-        if (!user) throw new NotFoundException(`User ${id} not found`);
+        const user = await this.findEntityById(id);
         return UserMapper.toResponse(user)
 
     }
 
-    async findAuthUserById(id: string) {
-        const user = await this.userRepo.findOne({
-            where: { id },
-            relations: {
-                role: {
-                    permissions: true,
-                },
-            },
-        });
-
-        if (!user) throw new NotFoundException(`User ${id} not found`);
-        return user;
+    async findAuthUserById(id: string): Promise<User | null> {
+        return this.userRepo.findAuthUserById(id);
     }
 
     async findWithPasswordByIdentifier(where: FindOptionsWhere<User>) {
-        const user = await this.userRepo.findOne({
-            where,
-            relations: {
-                role: true,
-            },
-            select: {
-                id: true,
-                firstName: true,
-                lastName: true,
-                email: true,
-                phoneNumber: true,
-                countryCode: true,
-                password: true,
-                role: true,
-                userType: true,
-                status: true,
-                isPhoneVerified: true,
-                isEmailVerified: true,
-                createdAt: true,
-                updatedAt: true,
-            },
-        });
+        const user = await this.userRepo.findWithPasswordByIdentifier(where);
 
         if (!user) {
             return null;
@@ -136,15 +131,19 @@ export class UsersService {
     }
 
     async findByIdentifier(where: FindOptionsWhere<User>) {
-        return this.userRepo.findOne({
-            where,
-        });
+        return this.userRepo.findByIdentifier(where);
     }
 
     // ─── Update ───────────────────────────────────────────
-    async update(id: string, dto: UpdateUserDto) {
-        const user = await this.findById(id);
-        Object.assign(user, dto);
+    async update(id: string, command: UpdateUserCommand) {
+        const user = await this.findEntityById(id);
+        const updateData = { ...command };
+
+        if (typeof updateData.password === 'string' && updateData.password.trim().length > 0) {
+            updateData.password = await this.passwordService.hash(updateData.password);
+        }
+
+        Object.assign(user, updateData);
         const updated = await this.userRepo.save(user);
         this.logger.log(`User updated → ${id}`);
         return updated;
@@ -165,7 +164,7 @@ export class UsersService {
     }
 
     async softDelete(id: string): Promise<void> {
-        await this.findById(id);
+        await this.findEntityById(id);
         await this.userRepo.softDelete(id);
         this.logger.warn(`User soft deleted → ${id}`);
     }

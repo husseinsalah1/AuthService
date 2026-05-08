@@ -1,7 +1,7 @@
 import { DataSource } from 'typeorm';
-import { Permission } from 'src/modules/permissions/entities/permission.entity';
-import { Role } from 'src/modules/roles/entities/role.entity';
-import { PermissionKey } from 'src/modules/permissions/enums';
+import { Permission } from '@/modules/permissions/entities/permission.entity';
+import { Role } from '@/modules/roles/entities/role.entity';
+import { PermissionKey } from '@/modules/permissions/enums';
 
 type RoleSeed = {
   key: 'SUPER_ADMIN' | 'ADMIN' | 'SUPPLIER' | 'USER';
@@ -31,6 +31,7 @@ const ROLE_SEEDS: RoleSeed[] = [
     description: 'Administrative access bundle',
     isActive: true,
     permissions: [
+      PermissionKey.USERS_LIST,
       PermissionKey.USERS_CREATE,
       PermissionKey.USERS_READ,
       PermissionKey.USERS_UPDATE,

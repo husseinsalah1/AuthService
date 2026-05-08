@@ -1,5 +1,5 @@
-import { UserStatus } from '../enums/user-status.enum';
-import { UserType } from '../enums/user-type.enum';
+import { UserStatus } from '@/modules/users/enums/user-status.enum';
+import { UserType } from '@/modules/users/enums/user-type.enum';
 
 export type UserRoleResponse = {
     id: string;
@@ -13,7 +13,6 @@ export type UserResponse = {
     lastName: string | null;
     email: string | null;
     phoneNumber: string | null;
-    password: string | null,
     countryCode: string | null;
     isPhoneVerified: boolean;
     isEmailVerified: boolean;

@@ -1,4 +1,4 @@
-import { AppLogger } from '../shared/logger';
+import { AppLogger } from '@/shared/logger';
 
 const logger = new AppLogger('ResolveRedisUrl');
 

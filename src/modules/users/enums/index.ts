@@ -1,2 +1,2 @@
-export * from './user-status.enum'
-export * from './user-type.enum'
+export * from '@/modules/users/enums/user-status.enum'
+export * from '@/modules/users/enums/user-type.enum'

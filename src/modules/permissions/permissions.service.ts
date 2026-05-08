@@ -5,8 +5,8 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, In } from 'typeorm';
-import { Permission } from './entities/permission.entity';
-import { CreatePermissionDto } from './dtos/create-permission.dto';
+import { Permission } from '@/modules/permissions/entities/permission.entity';
+import { CreatePermissionCommand } from '@/modules/permissions/commands/create-permission.command';
 
 @Injectable()
 export class PermissionsService {
@@ -15,9 +15,9 @@ export class PermissionsService {
         private readonly permissionsRepository: Repository<Permission>,
     ) { }
 
-    async create(dto: CreatePermissionDto): Promise<Permission> {
+    async create(command: CreatePermissionCommand): Promise<Permission> {
         const existingPermission = await this.permissionsRepository.findOne({
-            where: [{ name: dto.name }, { key: dto.key }],
+            where: [{ name: command.name }, { key: command.key }],
         });
 
         if (existingPermission) {
@@ -25,8 +25,8 @@ export class PermissionsService {
         }
 
         const permission = this.permissionsRepository.create({
-            ...dto,
-            key: dto.key.toLowerCase(),
+            ...command,
+            key: command.key.toLowerCase(),
         });
 
         return this.permissionsRepository.save(permission);

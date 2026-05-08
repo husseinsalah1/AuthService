@@ -1,8 +1,8 @@
 import 'dotenv/config';
-import dataSource from '../../configs/typeorm.datasource';
-import { seedPermissions } from './permissions.seeder';
-import { seederRole } from './role.seeder';
-import { seedSuperAdminCredentials } from './super-admin.seeder';
+import dataSource from '@/configs/typeorm.datasource';
+import { seedPermissions } from '@/database/seeders/permissions.seeder';
+import { seederRole } from '@/database/seeders/role.seeder';
+import { seedSuperAdminCredentials } from '@/database/seeders/super-admin.seeder';
 
 async function runSeeders(): Promise<void> {
   try {

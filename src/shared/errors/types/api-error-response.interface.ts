@@ -1,6 +1,6 @@
 // src/common/errors/types/api-error-response.interface.ts
 
-import { ErrorItem } from './error-item.interface';
+import { ErrorItem } from '@/shared/errors/types/error-item.interface';
 
 export interface ApiErrorResponse {
     success: false;

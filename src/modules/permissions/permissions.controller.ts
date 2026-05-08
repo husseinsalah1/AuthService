@@ -1,8 +1,9 @@
-import { Body, Controller, Get, Param, Post } from '@nestjs/common';
-import { PermissionsService } from './permissions.service';
-import { CreatePermissionDto } from './dtos/create-permission.dto';
-import { Permissions } from 'src/shared/decorators';
-import { PermissionKey } from './enums';
+import { Body, Controller, Get, Param, ParseUUIDPipe, Post } from '@nestjs/common';
+import { PermissionsService } from '@/modules/permissions/permissions.service';
+import { CreatePermissionDto } from '@/modules/permissions/dtos/create-permission.dto';
+import { Permissions } from '@/shared/decorators';
+import { PermissionKey } from '@/modules/permissions/enums';
+import { PermissionsRequestMapper } from '@/modules/permissions/mappers/permissions-request.mapper';
 
 @Controller('permissions')
 export class PermissionsController {
@@ -11,7 +12,8 @@ export class PermissionsController {
     @Permissions(PermissionKey.PERMISSIONS_CREATE)
     @Post()
     create(@Body() dto: CreatePermissionDto) {
-        return this.permissionsService.create(dto);
+        const command = PermissionsRequestMapper.toCreatePermissionCommand(dto);
+        return this.permissionsService.create(command);
     }
 
     @Permissions(PermissionKey.PERMISSIONS_READ)
@@ -28,7 +30,7 @@ export class PermissionsController {
 
     @Permissions(PermissionKey.PERMISSIONS_READ)
     @Get(':id')
-    findOne(@Param('id') id: string) {
+    findOne(@Param('id', new ParseUUIDPipe()) id: string) {
         return this.permissionsService.findOne(id);
     }
 }

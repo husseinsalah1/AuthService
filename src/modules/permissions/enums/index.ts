@@ -3,6 +3,7 @@ export enum PermissionKey {
     USERS_READ = 'users.read',
     USERS_UPDATE = 'users.update',
     USERS_DELETE = 'users.delete',
+    USERS_LIST = 'users.list',
 
     ADMINS_CREATE = 'admins.create',
     ADMINS_READ = 'admins.read',

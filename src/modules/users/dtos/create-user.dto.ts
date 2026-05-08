@@ -1,5 +1,5 @@
-import { IsEmail, IsEnum, IsOptional, IsString, MinLength, IsMobilePhone, IsNotEmpty } from 'class-validator';
-import { UserStatus } from '../enums';
+import { IsEmail, IsString, MinLength, IsNotEmpty, Length } from 'class-validator';
+import { IsValidPhoneNumber } from '@/shared/validators/is-valid-phone.validator';
 
 export class CreateUserDto {
     @IsNotEmpty()
@@ -21,9 +21,11 @@ export class CreateUserDto {
 
     @IsNotEmpty()
     @IsString()
+    @IsValidPhoneNumber()
     phoneNumber: string;
 
     @IsNotEmpty()
     @IsString()
+    @Length(2, 2)
     countryCode: string;
 }

@@ -9,9 +9,9 @@ import {
     JoinColumn,
     Index
 } from 'typeorm';
-import { UserStatus } from '../enums/user-status.enum';
-import { UserType } from '../enums/user-type.enum';
-import { Role } from 'src/modules/roles/entities/role.entity';
+import { UserStatus } from '@/modules/users/enums/user-status.enum';
+import { UserType } from '@/modules/users/enums/user-type.enum';
+import { Role } from '@/modules/roles/entities/role.entity';
 
 @Entity('users')
 export class User {

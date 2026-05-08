@@ -4,6 +4,7 @@ export interface JwtPayload {
     phoneNumber: string,
     countryCode: string,
     role: string,
+    jti?: string,
     iat?: number,
     exp?: number
 }

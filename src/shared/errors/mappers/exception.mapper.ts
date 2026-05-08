@@ -1,9 +1,9 @@
 // src/common/errors/mappers/exception.mapper.ts
 
 import { HttpException, HttpStatus } from '@nestjs/common';
-import { DatabaseExceptionMapper } from './database-exception.mapper';
-import { HttpExceptionMapper } from './http-exception.mapper';
-import { MappedException } from '../types/mapped-exception.interface';
+import { DatabaseExceptionMapper } from '@/shared/errors/mappers/database-exception.mapper';
+import { HttpExceptionMapper } from '@/shared/errors/mappers/http-exception.mapper';
+import { MappedException } from '@/shared/errors/types/mapped-exception.interface';
 
 export class ExceptionMapper {
     static map(exception: unknown): MappedException {
