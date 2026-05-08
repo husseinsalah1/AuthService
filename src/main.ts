@@ -3,6 +3,7 @@ import { AppModule } from '@/app.module';
 import { AppLogger } from '@/shared/logger';
 import { BadRequestException, ValidationPipe } from '@nestjs/common';
 import { formatValidationErrors } from '@/shared/errors/utils/validation-error.util';
+import { setupSwagger } from '@/configs/swagger.config';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -21,10 +22,14 @@ async function bootstrap() {
       },
     }),
   );
+
+  setupSwagger(app);
+
   const port = process.env.PORT || 8000;
   await app.listen(port, '0.0.0.0');
 
-  logger.log(`Auth Service is running on port ${port}`) 
+  logger.log(`Auth Service is running on port ${port}`)
+  logger.log(`Swagger docs available at /docs`)
 
 }
 

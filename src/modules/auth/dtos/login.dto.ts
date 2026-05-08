@@ -11,12 +11,18 @@ import {
 import { CountryCode } from 'libphonenumber-js';
 import { IdentifierType } from '@/modules/auth/enums/identifier-type.enum';
 import { IsValidPhoneNumber } from '@/shared/validators/is-valid-phone.validator';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 export class LoginDto {
+    @ApiProperty({ enum: IdentifierType, example: IdentifierType.EMAIL })
     @IsEnum(IdentifierType)
     @IsNotEmpty()
     identifierType: IdentifierType;
 
+    @ApiProperty({
+        example: 'john.doe@example.com',
+        description: 'Use email or phone number based on identifierType',
+    })
     @IsString()
     @IsNotEmpty()
     @ValidateIf((o) => o.identifierType !== IdentifierType.PHONE_NUMBER)
@@ -25,6 +31,7 @@ export class LoginDto {
     @IsValidPhoneNumber()
     identifier: string;
 
+    @ApiPropertyOptional({ example: 'EG', minLength: 2, maxLength: 2 })
     @ValidateIf((o) => {
         if (o.identifierType !== IdentifierType.PHONE_NUMBER) return false;
 
@@ -37,6 +44,7 @@ export class LoginDto {
     @Length(2, 2)
     countryCode?: CountryCode;
 
+    @ApiProperty({ example: 'Str0ng!Pass' })
     @IsString()
     @IsNotEmpty()
     password: string;
