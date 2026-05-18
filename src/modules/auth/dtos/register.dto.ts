@@ -3,6 +3,7 @@ import { CountryCode } from 'libphonenumber-js';
 import { IsValidPhoneNumber } from '@/shared/validators/is-valid-phone.validator';
 import { IsStrongPassword } from '@/shared/validators/is-strong-password.validator';
 import { ApiProperty } from '@nestjs/swagger';
+import { UserType } from 'src/modules/users/enums';
 
 export class RegisterDto {
     @ApiProperty({ example: 'John' })
@@ -36,4 +37,9 @@ export class RegisterDto {
     @IsString()
     @Length(2, 2)
     countryCode: CountryCode;
+
+    @ApiProperty({ enum: UserType })
+    @IsNotEmpty()
+    @IsString()
+    userType: UserType;
 }

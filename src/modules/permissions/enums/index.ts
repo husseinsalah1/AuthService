@@ -5,6 +5,16 @@ export enum PermissionKey {
     USERS_DELETE = 'users.delete',
     USERS_LIST = 'users.list',
 
+    PRODUCTS_CREATE = 'products.create',
+    PRODUCTS_READ = 'products.read',
+    PRODUCTS_UPDATE = 'products.update',
+    PRODUCTS_DELETE = 'products.delete',
+
+    CATEGORIES_CREATE = 'categories.create',
+    CATEGORIES_READ = 'categories.read',
+    CATEGORIES_UPDATE = 'categories.update',
+    CATEGORIES_DELETE = 'categories.delete',
+
     ADMINS_CREATE = 'admins.create',
     ADMINS_READ = 'admins.read',
     ADMINS_UPDATE = 'admins.update',

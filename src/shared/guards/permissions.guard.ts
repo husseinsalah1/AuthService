@@ -6,7 +6,7 @@ import { RequestWithUser } from '@/shared/interfaces';
 
 @Injectable()
 export class PermissionsGuard implements CanActivate {
-  constructor(private readonly reflector: Reflector) {}
+  constructor(private readonly reflector: Reflector) { }
 
   canActivate(context: ExecutionContext): boolean {
     const requiredPermissions = this.reflector.getAllAndOverride<PermissionKey[]>(
@@ -20,6 +20,7 @@ export class PermissionsGuard implements CanActivate {
 
     const request = context.switchToHttp().getRequest<RequestWithUser>();
     const userPermissions = request.user?.role?.permissions ?? [];
+
     const userPermissionKeys = new Set(userPermissions.map((permission) => permission.key));
 
     const hasAllRequiredPermissions = requiredPermissions.every((permission) =>

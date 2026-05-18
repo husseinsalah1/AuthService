@@ -119,6 +119,66 @@ const permissions: PermissionSeed[] = [
         group: 'permissions',
         description: 'Can delete permissions',
     },
+
+    // Products
+    {
+        name: 'Create Products',
+        key: PermissionKey.PRODUCTS_CREATE,
+        group: 'products',
+        description: 'Can create products',
+    },
+
+    {
+        name: 'Read Products',
+        key: PermissionKey.PRODUCTS_READ,
+        group: 'products',
+        description: 'Can view products',
+    },
+
+    {
+        name: 'Update Products',
+        key: PermissionKey.PRODUCTS_UPDATE,
+        group: 'products',
+        description: 'Can update products',
+    },
+
+    {
+        name: 'Delete Products',
+        key: PermissionKey.PRODUCTS_DELETE,
+        group: 'products',
+        description: 'Can delete products',
+    },
+
+
+    // Categories
+    {
+        name: 'Create Categories',
+        key: PermissionKey.CATEGORIES_CREATE,
+        group: 'categories',
+        description: 'Can create categories',
+    },
+
+    {
+        name: 'Read Categories',
+        key: PermissionKey.CATEGORIES_READ,
+        group: 'categories',
+        description: 'Can view categories',
+    },
+
+    {
+        name: 'Update Categories',
+        key: PermissionKey.CATEGORIES_UPDATE,
+        group: 'categories',
+        description: 'Can update categories',
+    },
+
+
+    {
+        name: 'Delete Categories',
+        key: PermissionKey.CATEGORIES_DELETE,
+        group: 'categories',
+        description: 'Can delete categories',
+    },
 ];
 
 export async function seedPermissions(dataSource: DataSource): Promise<void> {
