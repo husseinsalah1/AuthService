@@ -6,7 +6,13 @@ function isLocalRedisUrl(url: string): boolean {
   try {
     const u = new URL(url);
     const h = u.hostname.toLowerCase();
-    return h === 'localhost' || h === '127.0.0.1' || h === '::1';
+
+    return (
+      h === 'localhost' ||
+      h === '127.0.0.1' ||
+      h === '::1' ||
+      h === '[::1]'
+    );
   } catch {
     return false;
   }
@@ -18,20 +24,31 @@ function isLocalRedisUrl(url: string): boolean {
  */
 export function resolveRedisUrl(): string {
   const redisUrl = process.env.REDIS_URL?.trim();
-  if (redisUrl && !isLocalRedisUrl(redisUrl)) {
-    logger.log('Using REDIS_URL');
+  const isProduction = process.env.NODE_ENV === 'production';
+
+  if (!redisUrl) {
+    if (isProduction) {
+      throw new Error('REDIS_URL is required when NODE_ENV=production.');
+    }
+
+    logger.warn(
+      'REDIS_URL not set — falling back to redis://127.0.0.1:6379 local dev only',
+    );
+
+    return 'redis://127.0.0.1:6379';
+  }
+
+  if (isProduction && isLocalRedisUrl(redisUrl)) {
+    throw new Error(
+      'Invalid REDIS_URL in production. Do not use localhost/127.0.0.1/::1 on Render. Use external Redis URL.',
+    );
+  }
+
+  if (isLocalRedisUrl(redisUrl)) {
+    logger.warn('Using local REDIS_URL. This should only happen in development.');
     return redisUrl;
   }
 
-  if (redisUrl) {
-    logger.log('Using REDIS_URL (local)');
-    return redisUrl;
-  }
-
-  if (process.env.NODE_ENV === 'production') {
-    throw new Error('REDIS_URL is required when NODE_ENV=production.');
-  }
-
-  logger.warn('REDIS_URL not set — falling back to redis://127.0.0.1:6379 (local dev only)');
-  return 'redis://127.0.0.1:6379';
+  logger.log('Using external REDIS_URL');
+  return redisUrl;
 }
