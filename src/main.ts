@@ -4,10 +4,13 @@ import { AppLogger } from '@/shared/logger';
 import { BadRequestException, ValidationPipe } from '@nestjs/common';
 import { formatValidationErrors } from '@/shared/errors/utils/validation-error.util';
 import { setupSwagger } from '@/configs/swagger.config';
+import { corsConfig } from './configs/cors.config';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   const logger = new AppLogger("NestApplication")
+
+  app.enableCors(corsConfig);
 
   app.useGlobalPipes(
     new ValidationPipe({
