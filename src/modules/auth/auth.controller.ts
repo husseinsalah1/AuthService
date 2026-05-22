@@ -23,8 +23,12 @@ export class AuthController {
     @ApiBody({ type: RegisterDto })
     @ApiOkResponse({ description: 'User registered successfully with token pair' })
     @Post('register')
-    register(@Body() dto: RegisterDto) {
-        return this.authService.register(AuthRequestMapper.toRegisterCommand(dto));
+    async register(@Body() dto: RegisterDto) {
+        const result = await this.authService.register(AuthRequestMapper.toRegisterCommand(dto));
+        return {
+            message: 'Registration successful, OTP sent to your phone number, With 10 minutes to verify',
+            data: result,
+        }
     }
 
     @Public()

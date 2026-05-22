@@ -2,7 +2,7 @@
   "info": {
     "name": "AuthService Module",
     "_postman_id": "94f6ef84-7800-4f15-8949-8f84db72c3d5",
-    "description": "Module-based collection for the whole AuthService project with one shared login token flow.",
+    "description": "Module-based collection for the AuthService NestJS API. Run **Login** first to populate `accessToken` for protected routes. Identifier types use API enums: `email`, `phoneNumber`. Dev OTP is always `123456`.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "auth": {
@@ -16,20 +16,23 @@
     ]
   },
   "variable": [
-    { "key": "baseUrl", "value": "http://localhost:3000" },
+    { "key": "baseUrl", "value": "http://localhost:8000" },
     { "key": "accessToken", "value": "" },
     { "key": "refreshToken", "value": "" },
     { "key": "userId", "value": "" },
     { "key": "roleId", "value": "" },
     { "key": "permissionId", "value": "" },
-    { "key": "identifierType", "value": "EMAIL" },
+    { "key": "identifierType", "value": "email" },
     { "key": "identifier", "value": "superadmin@example.com" },
-    { "key": "password", "value": "SuperAdmin123!" },
+    { "key": "password", "value": "change-this-super-admin-password" },
     { "key": "registerEmail", "value": "register.user@example.com" },
-    { "key": "registerPhone", "value": "1012345678" },
+    { "key": "registerPhone", "value": "+201012345678" },
     { "key": "countryCode", "value": "EG" },
+    { "key": "userType", "value": "USER" },
     { "key": "otpCode", "value": "123456" },
-    { "key": "resetToken", "value": "RESET_TOKEN_HERE" }
+    { "key": "resetToken", "value": "" },
+    { "key": "adminEmail", "value": "admin.created@example.com" },
+    { "key": "adminPhone", "value": "+201012345679" }
   ],
   "item": [
     {
@@ -40,7 +43,25 @@
           "request": {
             "auth": { "type": "noauth" },
             "method": "GET",
-            "url": { "raw": "{{baseUrl}}/health", "host": ["{{baseUrl}}"], "path": ["health"] }
+            "url": {
+              "raw": "{{baseUrl}}/health",
+              "host": ["{{baseUrl}}"],
+              "path": ["health"]
+            },
+            "description": "Returns service status, uptime, and timestamp."
+          }
+        },
+        {
+          "name": "Health Head Check",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "HEAD",
+            "url": {
+              "raw": "{{baseUrl}}/health",
+              "host": ["{{baseUrl}}"],
+              "path": ["health"]
+            },
+            "description": "Lightweight health probe (no body)."
           }
         }
       ]
@@ -50,15 +71,38 @@
       "item": [
         {
           "name": "Register",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const json = pm.response.json();",
+                  "if (json?.data?.tokens) {",
+                  "  pm.collectionVariables.set('accessToken', json.data.tokens.accessToken || '');",
+                  "  pm.collectionVariables.set('refreshToken', json.data.tokens.refreshToken || '');",
+                  "}",
+                  "if (json?.data?.id) {",
+                  "  pm.collectionVariables.set('userId', json.data.id);",
+                  "}"
+                ]
+              }
+            }
+          ],
           "request": {
             "auth": { "type": "noauth" },
             "method": "POST",
             "header": [{ "key": "Content-Type", "value": "application/json" }],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"firstName\": \"Register\",\n  \"lastName\": \"User\",\n  \"email\": \"{{registerEmail}}\",\n  \"password\": \"{{password}}\",\n  \"phoneNumber\": \"{{registerPhone}}\",\n  \"countryCode\": \"{{countryCode}}\"\n}"
+              "raw": "{\n  \"firstName\": \"Register\",\n  \"lastName\": \"User\",\n  \"email\": \"{{registerEmail}}\",\n  \"password\": \"{{password}}\",\n  \"phoneNumber\": \"{{registerPhone}}\",\n  \"countryCode\": \"{{countryCode}}\",\n  \"userType\": \"{{userType}}\"\n}"
             },
-            "url": { "raw": "{{baseUrl}}/auth/register", "host": ["{{baseUrl}}"], "path": ["auth", "register"] }
+            "url": {
+              "raw": "{{baseUrl}}/auth/register",
+              "host": ["{{baseUrl}}"],
+              "path": ["auth", "register"]
+            },
+            "description": "Creates a user in PENDING_VERIFICATION status and returns tokens."
           }
         },
         {
@@ -85,22 +129,91 @@
               "mode": "raw",
               "raw": "{\n  \"identifierType\": \"{{identifierType}}\",\n  \"identifier\": \"{{identifier}}\",\n  \"password\": \"{{password}}\"\n}"
             },
-            "url": { "raw": "{{baseUrl}}/auth/login", "host": ["{{baseUrl}}"], "path": ["auth", "login"] }
+            "url": {
+              "raw": "{{baseUrl}}/auth/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["auth", "login"]
+            },
+            "description": "Authenticate with email or phone. Phone login without + prefix requires countryCode."
+          }
+        },
+        {
+          "name": "Login With Phone",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const json = pm.response.json();",
+                  "pm.collectionVariables.set('accessToken', json?.data?.tokens?.accessToken || '');",
+                  "pm.collectionVariables.set('refreshToken', json?.data?.tokens?.refreshToken || '');",
+                  "pm.collectionVariables.set('userId', json?.data?.id || '');"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"identifierType\": \"phoneNumber\",\n  \"identifier\": \"{{registerPhone}}\",\n  \"countryCode\": \"{{countryCode}}\",\n  \"password\": \"{{password}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["auth", "login"]
+            }
           }
         },
         {
           "name": "Refresh",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const json = pm.response.json();",
+                  "const tokens = json?.data?.tokens || json?.data;",
+                  "if (tokens?.accessToken) {",
+                  "  pm.collectionVariables.set('accessToken', tokens.accessToken);",
+                  "}",
+                  "if (tokens?.refreshToken) {",
+                  "  pm.collectionVariables.set('refreshToken', tokens.refreshToken);",
+                  "}"
+                ]
+              }
+            }
+          ],
           "request": {
-            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{refreshToken}}", "type": "string" }] },
+            "auth": { "type": "noauth" },
             "method": "POST",
-            "url": { "raw": "{{baseUrl}}/auth/refresh", "host": ["{{baseUrl}}"], "path": ["auth", "refresh"] }
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"refreshToken\": \"{{refreshToken}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/refresh",
+              "host": ["{{baseUrl}}"],
+              "path": ["auth", "refresh"]
+            },
+            "description": "Rotate tokens using refreshToken in body or Bearer header."
           }
         },
         {
           "name": "Me",
           "request": {
             "method": "GET",
-            "url": { "raw": "{{baseUrl}}/auth/me", "host": ["{{baseUrl}}"], "path": ["auth", "me"] }
+            "url": {
+              "raw": "{{baseUrl}}/auth/me",
+              "host": ["{{baseUrl}}"],
+              "path": ["auth", "me"]
+            },
+            "description": "Current authenticated user profile."
           }
         },
         {
@@ -111,9 +224,14 @@
             "header": [{ "key": "Content-Type", "value": "application/json" }],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"identifierType\": \"EMAIL\",\n  \"identifier\": \"{{identifier}}\"\n}"
+              "raw": "{\n  \"identifierType\": \"{{identifierType}}\",\n  \"identifier\": \"{{identifier}}\"\n}"
             },
-            "url": { "raw": "{{baseUrl}}/auth/forgot-password", "host": ["{{baseUrl}}"], "path": ["auth", "forgot-password"] }
+            "url": {
+              "raw": "{{baseUrl}}/auth/forgot-password",
+              "host": ["{{baseUrl}}"],
+              "path": ["auth", "forgot-password"]
+            },
+            "description": "Always returns success to prevent account enumeration."
           }
         },
         {
@@ -126,33 +244,80 @@
               "mode": "raw",
               "raw": "{\n  \"token\": \"{{resetToken}}\",\n  \"newPassword\": \"{{password}}\"\n}"
             },
-            "url": { "raw": "{{baseUrl}}/auth/reset-password", "host": ["{{baseUrl}}"], "path": ["auth", "reset-password"] }
+            "url": {
+              "raw": "{{baseUrl}}/auth/reset-password",
+              "host": ["{{baseUrl}}"],
+              "path": ["auth", "reset-password"]
+            }
           }
         },
         {
-          "name": "Send OTP",
+          "name": "Send OTP (Phone)",
           "request": {
             "auth": { "type": "noauth" },
             "method": "POST",
             "header": [{ "key": "Content-Type", "value": "application/json" }],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"identifierType\": \"PHONE_NUMBER\",\n  \"identifier\": \"{{registerPhone}}\",\n  \"countryCode\": \"{{countryCode}}\"\n}"
+              "raw": "{\n  \"identifierType\": \"phoneNumber\",\n  \"identifier\": \"{{registerPhone}}\",\n  \"countryCode\": \"{{countryCode}}\"\n}"
             },
-            "url": { "raw": "{{baseUrl}}/auth/send-otp", "host": ["{{baseUrl}}"], "path": ["auth", "send-otp"] }
+            "url": {
+              "raw": "{{baseUrl}}/auth/send-otp",
+              "host": ["{{baseUrl}}"],
+              "path": ["auth", "send-otp"]
+            },
+            "description": "Dev environment uses fixed OTP 123456."
           }
         },
         {
-          "name": "Verify OTP",
+          "name": "Send OTP (Email)",
           "request": {
             "auth": { "type": "noauth" },
             "method": "POST",
             "header": [{ "key": "Content-Type", "value": "application/json" }],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"identifierType\": \"PHONE_NUMBER\",\n  \"identifier\": \"{{registerPhone}}\",\n  \"countryCode\": \"{{countryCode}}\",\n  \"code\": \"{{otpCode}}\"\n}"
+              "raw": "{\n  \"identifierType\": \"email\",\n  \"identifier\": \"{{registerEmail}}\"\n}"
             },
-            "url": { "raw": "{{baseUrl}}/auth/verify-otp", "host": ["{{baseUrl}}"], "path": ["auth", "verify-otp"] }
+            "url": {
+              "raw": "{{baseUrl}}/auth/send-otp",
+              "host": ["{{baseUrl}}"],
+              "path": ["auth", "send-otp"]
+            }
+          }
+        },
+        {
+          "name": "Verify OTP (Phone)",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"identifierType\": \"phoneNumber\",\n  \"identifier\": \"{{registerPhone}}\",\n  \"countryCode\": \"{{countryCode}}\",\n  \"code\": \"{{otpCode}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/verify-otp",
+              "host": ["{{baseUrl}}"],
+              "path": ["auth", "verify-otp"]
+            }
+          }
+        },
+        {
+          "name": "Verify OTP (Email)",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"identifierType\": \"email\",\n  \"identifier\": \"{{registerEmail}}\",\n  \"code\": \"{{otpCode}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/verify-otp",
+              "host": ["{{baseUrl}}"],
+              "path": ["auth", "verify-otp"]
+            }
           }
         }
       ]
@@ -161,10 +326,37 @@
       "name": "Users Module",
       "item": [
         {
+          "name": "List Users",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/users?page=1&limit=10",
+              "host": ["{{baseUrl}}"],
+              "path": ["users"],
+              "query": [
+                { "key": "page", "value": "1" },
+                { "key": "limit", "value": "10" },
+                { "key": "search", "value": "", "disabled": true },
+                { "key": "status", "value": "ACTIVE", "disabled": true },
+                { "key": "userType", "value": "USER", "disabled": true },
+                { "key": "roleId", "value": "{{roleId}}", "disabled": true },
+                { "key": "isPhoneVerified", "value": "true", "disabled": true },
+                { "key": "isEmailVerified", "value": "true", "disabled": true }
+              ]
+            },
+            "description": "Requires USERS_LIST permission. Optional filters: search, status, userType, roleId, isPhoneVerified, isEmailVerified."
+          }
+        },
+        {
           "name": "Get User By Id",
           "request": {
             "method": "GET",
-            "url": { "raw": "{{baseUrl}}/users/{{userId}}", "host": ["{{baseUrl}}"], "path": ["users", "{{userId}}"] }
+            "url": {
+              "raw": "{{baseUrl}}/users/{{userId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["users", "{{userId}}"]
+            },
+            "description": "Requires USERS_READ. USER/SUPPLIER types may only access their own id."
           }
         },
         {
@@ -172,15 +364,28 @@
           "request": {
             "method": "PATCH",
             "header": [{ "key": "Content-Type", "value": "application/json" }],
-            "body": { "mode": "raw", "raw": "{\n  \"firstName\": \"Updated\",\n  \"lastName\": \"User\"\n}" },
-            "url": { "raw": "{{baseUrl}}/users/{{userId}}", "host": ["{{baseUrl}}"], "path": ["users", "{{userId}}"] }
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"firstName\": \"Updated\",\n  \"lastName\": \"User\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/users/{{userId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["users", "{{userId}}"]
+            },
+            "description": "Requires USERS_UPDATE."
           }
         },
         {
           "name": "Delete User",
           "request": {
             "method": "DELETE",
-            "url": { "raw": "{{baseUrl}}/users/{{userId}}", "host": ["{{baseUrl}}"], "path": ["users", "{{userId}}"] }
+            "url": {
+              "raw": "{{baseUrl}}/users/{{userId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["users", "{{userId}}"]
+            },
+            "description": "Soft delete. Requires USERS_DELETE."
           }
         }
       ]
@@ -197,7 +402,7 @@
                 "type": "text/javascript",
                 "exec": [
                   "const json = pm.response.json();",
-                  "pm.collectionVariables.set('roleId', json?.data?.id || json?.id || '');"
+                  "pm.collectionVariables.set('roleId', json?.data?.id || '');"
                 ]
               }
             }
@@ -205,20 +410,89 @@
           "request": {
             "method": "POST",
             "header": [{ "key": "Content-Type", "value": "application/json" }],
-            "body": { "mode": "raw", "raw": "{\n  \"name\": \"Support Access\"\n}" },
-            "url": { "raw": "{{baseUrl}}/roles", "host": ["{{baseUrl}}"], "path": ["roles"] }
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Support Access\",\n  \"description\": \"Support team access role\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/roles",
+              "host": ["{{baseUrl}}"],
+              "path": ["roles"]
+            },
+            "description": "Requires ROLES_CREATE. Role key is auto-generated from name."
           }
         },
-        { "name": "Get Roles", "request": { "method": "GET", "url": { "raw": "{{baseUrl}}/roles", "host": ["{{baseUrl}}"], "path": ["roles"] } } },
-        { "name": "Get Active Roles", "request": { "method": "GET", "url": { "raw": "{{baseUrl}}/roles/active", "host": ["{{baseUrl}}"], "path": ["roles", "active"] } } },
-        { "name": "Get Role By Id", "request": { "method": "GET", "url": { "raw": "{{baseUrl}}/roles/{{roleId}}", "host": ["{{baseUrl}}"], "path": ["roles", "{{roleId}}"] } } },
+        {
+          "name": "Get Roles",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/roles?page=1&limit=10",
+              "host": ["{{baseUrl}}"],
+              "path": ["roles"],
+              "query": [
+                { "key": "page", "value": "1" },
+                { "key": "limit", "value": "10" }
+              ]
+            },
+            "description": "Paginated list. Requires ROLES_READ."
+          }
+        },
+        {
+          "name": "Get Active Roles",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const json = pm.response.json();",
+                  "const roles = Array.isArray(json?.data) ? json.data : [];",
+                  "const adminRole = roles.find((r) => r.key === 'ADMIN') || roles[0];",
+                  "if (adminRole?.id) {",
+                  "  pm.collectionVariables.set('roleId', adminRole.id);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/roles/active",
+              "host": ["{{baseUrl}}"],
+              "path": ["roles", "active"]
+            },
+            "description": "Requires ROLES_READ. Test script stores ADMIN role id (or first role) in roleId."
+          }
+        },
+        {
+          "name": "Get Role By Id",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/roles/{{roleId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["roles", "{{roleId}}"]
+            },
+            "description": "Returns role with grouped permissions."
+          }
+        },
         {
           "name": "Update Role",
           "request": {
             "method": "PATCH",
             "header": [{ "key": "Content-Type", "value": "application/json" }],
-            "body": { "mode": "raw", "raw": "{\n  \"name\": \"Support Access Updated\"\n}" },
-            "url": { "raw": "{{baseUrl}}/roles/{{roleId}}", "host": ["{{baseUrl}}"], "path": ["roles", "{{roleId}}"] }
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Support Access Updated\",\n  \"description\": \"Updated support role\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/roles/{{roleId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["roles", "{{roleId}}"]
+            },
+            "description": "Requires ROLES_UPDATE."
           }
         },
         {
@@ -226,11 +500,30 @@
           "request": {
             "method": "POST",
             "header": [{ "key": "Content-Type", "value": "application/json" }],
-            "body": { "mode": "raw", "raw": "{\n  \"permissionIds\": [\"{{permissionId}}\"]\n}" },
-            "url": { "raw": "{{baseUrl}}/roles/{{roleId}}/permissions", "host": ["{{baseUrl}}"], "path": ["roles", "{{roleId}}", "permissions"] }
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"permissionIds\": [\"{{permissionId}}\"]\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/roles/{{roleId}}/permissions",
+              "host": ["{{baseUrl}}"],
+              "path": ["roles", "{{roleId}}", "permissions"]
+            },
+            "description": "Requires ROLES_UPDATE."
           }
         },
-        { "name": "Delete Role", "request": { "method": "DELETE", "url": { "raw": "{{baseUrl}}/roles/{{roleId}}", "host": ["{{baseUrl}}"], "path": ["roles", "{{roleId}}"] } } }
+        {
+          "name": "Delete Role",
+          "request": {
+            "method": "DELETE",
+            "url": {
+              "raw": "{{baseUrl}}/roles/{{roleId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["roles", "{{roleId}}"]
+            },
+            "description": "Soft delete. Requires ROLES_DELETE."
+          }
+        }
       ]
     },
     {
@@ -245,7 +538,7 @@
                 "type": "text/javascript",
                 "exec": [
                   "const json = pm.response.json();",
-                  "pm.collectionVariables.set('permissionId', json?.data?.id || json?.id || '');"
+                  "pm.collectionVariables.set('permissionId', json?.data?.id || '');"
                 ]
               }
             }
@@ -253,13 +546,54 @@
           "request": {
             "method": "POST",
             "header": [{ "key": "Content-Type", "value": "application/json" }],
-            "body": { "mode": "raw", "raw": "{\n  \"name\": \"Export Reports\",\n  \"key\": \"reports.export\",\n  \"group\": \"reports\",\n  \"description\": \"Can export reports\"\n}" },
-            "url": { "raw": "{{baseUrl}}/permissions", "host": ["{{baseUrl}}"], "path": ["permissions"] }
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Export Reports\",\n  \"key\": \"reports.export\",\n  \"group\": \"reports\",\n  \"description\": \"Can export reports\",\n  \"isActive\": true\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/permissions",
+              "host": ["{{baseUrl}}"],
+              "path": ["permissions"]
+            },
+            "description": "Requires PERMISSIONS_CREATE. Key is stored lowercase."
           }
         },
-        { "name": "Get Permissions", "request": { "method": "GET", "url": { "raw": "{{baseUrl}}/permissions", "host": ["{{baseUrl}}"], "path": ["permissions"] } } },
-        { "name": "Get Active Permissions", "request": { "method": "GET", "url": { "raw": "{{baseUrl}}/permissions/active", "host": ["{{baseUrl}}"], "path": ["permissions", "active"] } } },
-        { "name": "Get Permission By Id", "request": { "method": "GET", "url": { "raw": "{{baseUrl}}/permissions/{{permissionId}}", "host": ["{{baseUrl}}"], "path": ["permissions", "{{permissionId}}"] } } }
+        {
+          "name": "Get Permissions",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/permissions",
+              "host": ["{{baseUrl}}"],
+              "path": ["permissions"]
+            },
+            "description": "Requires PERMISSIONS_READ."
+          }
+        },
+        {
+          "name": "Get Active Permissions",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/permissions/active",
+              "host": ["{{baseUrl}}"],
+              "path": ["permissions", "active"]
+            },
+            "description": "Requires PERMISSIONS_READ."
+          }
+        },
+        {
+          "name": "Get Permission By Id",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/permissions/{{permissionId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["permissions", "{{permissionId}}"]
+            },
+            "description": "Requires PERMISSIONS_READ."
+          }
+        }
       ]
     },
     {
@@ -267,14 +601,33 @@
       "item": [
         {
           "name": "Create Admin",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const json = pm.response.json();",
+                  "if (json?.data?.id) {",
+                  "  pm.collectionVariables.set('userId', json.data.id);",
+                  "}"
+                ]
+              }
+            }
+          ],
           "request": {
             "method": "POST",
             "header": [{ "key": "Content-Type", "value": "application/json" }],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"firstName\": \"Admin\",\n  \"lastName\": \"Created\",\n  \"email\": \"admin.created@example.com\",\n  \"password\": \"{{password}}\",\n  \"phoneNumber\": \"1012345679\",\n  \"countryCode\": \"{{countryCode}}\",\n  \"roleType\": \"ADMIN\"\n}"
+              "raw": "{\n  \"firstName\": \"Admin\",\n  \"lastName\": \"Created\",\n  \"email\": \"{{adminEmail}}\",\n  \"password\": \"{{password}}\",\n  \"phoneNumber\": \"{{adminPhone}}\",\n  \"countryCode\": \"{{countryCode}}\",\n  \"roleId\": \"{{roleId}}\"\n}"
             },
-            "url": { "raw": "{{baseUrl}}/admins", "host": ["{{baseUrl}}"], "path": ["admins"] }
+            "url": {
+              "raw": "{{baseUrl}}/admins",
+              "host": ["{{baseUrl}}"],
+              "path": ["admins"]
+            },
+            "description": "Requires ADMINS_CREATE. Run Get Active Roles first to populate roleId."
           }
         }
       ]

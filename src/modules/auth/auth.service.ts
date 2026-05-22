@@ -23,6 +23,7 @@ import { UserMapper } from "@/modules/users/mappers/user.mapper";
 import { RedisService } from "@/modules/redis/redis.service";
 import { ConfigService } from "@nestjs/config";
 import jwt from 'jsonwebtoken';
+import { CountryCode } from "libphonenumber-js";
 
 @Injectable()
 export class AuthService {
@@ -156,6 +157,11 @@ export class AuthService {
         await this.storeRefreshSession(user.id, tokens.refreshToken, this.extractJtiFromToken(tokens.refreshToken));
 
         this.logger.log(`New user registered → ${user.id}`);
+        this.sendOtp({
+            identifierType: IdentifierType.PHONE_NUMBER,
+            identifier: user.phoneNumber,
+            countryCode: normalizedPhone.countryCode as CountryCode,
+        });
         return {
             ...UserMapper.toResponse(user),
             tokens
@@ -182,7 +188,12 @@ export class AuthService {
             throw new UnauthorizedException('Your account is inactive');
         }
         if (!user.isPhoneVerified) {
-            throw new UnauthorizedException('Phone number is not verified');
+            this.sendOtp({
+                identifierType: IdentifierType.PHONE_NUMBER,
+                identifier: user.phoneNumber,
+                countryCode: user.countryCode as CountryCode,
+            });
+            throw new UnauthorizedException('Phone number is not verified, OTP sent to your phone number, With 10 minutes to verify');
         }
 
         const tokens = await this.tokensService.generateTokens(user);
@@ -256,6 +267,7 @@ export class AuthService {
         if (!exists) {
             throw new NotFoundException("User Not Found");
         }
+        this.logger.log(`Sending OTP to ${identifier} for ${identifierType} identifier`);
         return this.otpService.sendOtp(parsedIdentifier.value, parsedIdentifier.type)
     }
 

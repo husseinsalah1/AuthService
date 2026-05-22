@@ -6,7 +6,7 @@ import { randomInt } from "crypto";
 
 
 
-const OTP_TTL_SECONDS = 10 * 60; // 10 minutes
+const OTP_TTL_SECONDS = 10 * 60; // 10 minutes 
 const OTP_KEY_PREFIX = 'otp:';
 const ATTEMPT_KEY_PREFIX = 'otp_attempts:';
 const MAX_ATTEMPTS = 5;
@@ -100,6 +100,6 @@ export class OtpService {
     }
 
     private generateOtp(): string {
-        return randomInt(100000, 1000000).toString()
+        return "123456"
     }
 }
