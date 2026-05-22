@@ -6,14 +6,14 @@ MSG="$(cat "$MSG_FILE")"
 # Allowed format examples:
 # feat: add login throttling
 # Fix: correct role permission seed
-PATTERN='^(feat|Fix): .+'
+PATTERN='^(feat|Fix|chore|refactor|test|docs|style|perf|build|ci|chore|revert|merge): .+'
 
 if printf '%s' "$MSG" | grep -Eq "$PATTERN"; then
   exit 0
 fi
 
 echo "Invalid commit message format."
-echo "Expected: feat|Fix: short description"
+echo "Expected: feat|Fix|chore|refactor|test|docs|style|perf|build|ci|chore|revert|merge: short description"
 echo "Examples:"
 echo "  feat: add login throttling"
 echo "  Fix: prevent token refresh replay"

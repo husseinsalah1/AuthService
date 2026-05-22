@@ -163,7 +163,8 @@ export class AuthService {
             countryCode: normalizedPhone.countryCode as CountryCode,
         });
         return {
-            ...UserMapper.toResponse(user),
+            email: user.email,
+            phoneNumber: user.phoneNumber,
             tokens
         }
     }
